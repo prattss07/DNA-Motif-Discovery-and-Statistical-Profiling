@@ -1,7 +1,7 @@
 """
 DNA Motif Discovery & Clinical Diagnostic Suite
-Clean, simple user interface with standard structured clinical reporting
-and an explicit Run button for pasted DNA sequences.
+Clean, simple, 100% native Streamlit interface with dedicated Run button
+and structured medical diagnostic cards (no raw code or HTML leaks).
 """
 
 import os
@@ -35,68 +35,13 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Clean, Theme-Adaptive CSS
+# Native theme adaptive styling
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
-
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
     html, body, [class*="css"] {
         font-family: 'Inter', sans-serif;
     }
-
-    code, pre {
-        font-family: 'JetBrains Mono', monospace !important;
-    }
-
-    /* Standard Medical Report Box */
-    .clinical-report-card {
-        border: 1px solid rgba(128, 128, 128, 0.25);
-        border-radius: 10px;
-        padding: 22px 26px;
-        background-color: rgba(128, 128, 128, 0.04);
-        margin: 20px 0;
-    }
-
-    .report-table {
-        width: 100%;
-        border-collapse: collapse;
-        margin: 12px 0;
-    }
-
-    .report-table td {
-        padding: 8px 12px;
-        border-bottom: 1px solid rgba(128, 128, 128, 0.15);
-        font-size: 0.95rem;
-    }
-
-    .report-table td.field-label {
-        font-weight: 600;
-        color: #64748b;
-        width: 32%;
-    }
-
-    .report-table td.field-value {
-        font-weight: 500;
-    }
-
-    /* Diagnosis Badges */
-    .badge-normal {
-        color: #10b981;
-        font-weight: 700;
-        font-size: 1.15rem;
-    }
-    .badge-carrier {
-        color: #f59e0b;
-        font-weight: 700;
-        font-size: 1.15rem;
-    }
-    .badge-pathogenic {
-        color: #ef4444;
-        font-weight: 700;
-        font-size: 1.15rem;
-    }
-
-    /* Tab styling */
     .stTabs [data-baseweb="tab-list"] {
         gap: 24px;
         border-bottom: 1px solid rgba(128, 128, 128, 0.2);
@@ -258,22 +203,19 @@ def render_dashboard():
                     should_run = True
 
         else:
-            # Explicit Form for Pasting DNA String to provide an immediate Run button without Ctrl+Enter
-            with st.form("paste_dna_form"):
-                raw_seq = st.text_area("Paste DNA Sequence (A, C, G, T)", height=140, placeholder="ATGGCGACCCTGGAAAAGTCCTTCCAGCAGCAGCAGCAGCAGCAG...")
-                run_pasted = st.form_submit_button("Run Diagnostic Analysis", type="primary", use_container_width=True)
-
-                if run_pasted:
-                    if raw_seq and raw_seq.strip():
-                        sequence = "".join(raw_seq.split()).upper()
-                        sample_name = "Pasted Nucleotides"
-                        should_run = True
-                    else:
-                        st.warning("Please paste a DNA nucleotide string to analyze.")
+            # Clean container for Pasted DNA with explicit Run button
+            raw_seq = st.text_area("Paste DNA Sequence (A, C, G, T)", height=150, placeholder="ATGGCGACCCTGGAAAAGTCCTTCCAGCAGCAGCAGCAGCAGCAG...")
+            if st.button("Run Diagnostic Analysis", type="primary", use_container_width=True):
+                if raw_seq and raw_seq.strip():
+                    sequence = "".join(raw_seq.split()).upper()
+                    sample_name = "Pasted Nucleotides"
+                    should_run = True
+                else:
+                    st.warning("Please paste a DNA nucleotide string to analyze.")
 
         # Execute Diagnostic Evaluation
         if should_run and sequence:
-            with st.spinner("Executing sequence verification..."):
+            with st.spinner("Analyzing sequence..."):
                 motif = d_info["motif"]
                 gene = d_info["gene"]
                 thresh = d_info["clinical_thresholds"]
@@ -292,22 +234,22 @@ def render_dashboard():
                 predicted_label = labels[pred_class]
                 confidence = pred_probs[pred_class] * 100.0
 
-                # 3. Clinical Status & Badge
+                # 3. Clinical Status
                 if repeats >= thresh["pathogenic_min"]:
                     clinical_status = "PATHOGENIC / FULL PENETRANCE"
                     risk_level = "High Risk"
-                    badge_class = "badge-pathogenic"
-                    recommendation = "Positive for pathological expansion. Referral to specialized neurogenetics clinic and supportive multidisciplinary care advised."
+                    rec_text = "Positive for pathological expansion. Referral to specialized neurogenetics clinic and supportive care recommended."
+                    status_alert_type = "error"
                 elif repeats > thresh["normal_max"]:
                     clinical_status = "INTERMEDIATE / CARRIER PREMUTATION"
                     risk_level = "Moderate Risk"
-                    badge_class = "badge-carrier"
-                    recommendation = "Intermediate allele detected. Patient is asymptomatic; genetic counseling recommended for reproductive and transmission risk to offspring."
+                    rec_text = "Intermediate allele detected. Patient is asymptomatic; genetic counseling recommended for reproductive and offspring transmission risk."
+                    status_alert_type = "warning"
                 else:
                     clinical_status = "NORMAL / WITHIN REFERENCE LIMITS"
                     risk_level = "Low Risk"
-                    badge_class = "badge-normal"
-                    recommendation = "Normal stable allele. No pathological expansion detected; no medical follow-up indicated."
+                    rec_text = "Normal stable allele. No pathological expansion detected; no medical follow-up indicated."
+                    status_alert_type = "success"
 
                 # 4. Save to DB
                 record_user_analysis(user["id"], {
@@ -326,52 +268,33 @@ def render_dashboard():
 
                 now_date = datetime.now().strftime("%B %d, %Y - %H:%M")
 
-                # STANDARD STRUCTURED CLINICAL REPORT
-                st.markdown(f"""
-                <div class="clinical-report-card">
-                    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(128,128,128,0.2); padding-bottom:8px; margin-bottom:14px;">
-                        <span style="font-weight:700; font-size:1.1rem; text-transform:uppercase; letter-spacing:0.04em;">Molecular Genetics Pathology Report</span>
-                        <span style="color:#64748b; font-size:0.85rem;">Date: {now_date}</span>
-                    </div>
+                # STANDARD CLINICAL REPORT (Rendered cleanly using native Streamlit containers)
+                st.write("")
+                with st.container(border=True):
+                    st.subheader("Molecular Genetics Pathology Report")
+                    st.caption(f"Specimen: {sample_name} | Date: {now_date}")
 
-                    <table class="report-table">
-                        <tr>
-                            <td class="field-label">Specimen Identifier</td>
-                            <td class="field-value"><code>{sample_name}</code> ({len(sequence):,} base pairs)</td>
-                        </tr>
-                        <tr>
-                            <td class="field-label">Condition & Gene Panel</td>
-                            <td class="field-value">{selected_disease.replace('_', ' ')} (<code>{gene}</code> Gene - Chromosome {d_info['chromosome']})</td>
-                        </tr>
-                        <tr>
-                            <td class="field-label">Target Nucleotide Motif</td>
-                            <td class="field-value"><code>5'-{motif}-3'</code> ({feats['total_motif_occurrences']} total matches identified)</td>
-                        </tr>
-                        <tr>
-                            <td class="field-label">Identified Repeat Tract</td>
-                            <td class="field-value"><b>{repeats} Consecutive Repeats</b> (Locus: nucleotide {feats['locus_start']} to {feats['locus_end']})</td>
-                        </tr>
-                        <tr>
-                            <td class="field-label">Diagnostic Finding</td>
-                            <td class="field-value"><span class="{badge_class}">{clinical_status}</span> &nbsp;({risk_level})</td>
-                        </tr>
-                        <tr>
-                            <td class="field-label">Machine Learning Classification</td>
-                            <td class="field-value">{predicted_label} (Confidence: <b>{confidence:.1f}%</b>)</td>
-                        </tr>
-                        <tr>
-                            <td class="field-label">Clinical Action / Recommendation</td>
-                            <td class="field-value">{recommendation}</td>
-                        </tr>
-                    </table>
-                </div>
-                """, unsafe_allow_html=True)
+                    # Main Status Alert
+                    if status_alert_type == "error":
+                        st.error(f"**Diagnostic Finding:** {clinical_status} ({risk_level})")
+                    elif status_alert_type == "warning":
+                        st.warning(f"**Diagnostic Finding:** {clinical_status} ({risk_level})")
+                    else:
+                        st.success(f"**Diagnostic Finding:** {clinical_status} ({risk_level})")
+
+                    st.markdown(f"""
+                    * **Condition & Gene Panel:** {selected_disease.replace('_', ' ')} (`{gene}` Gene - Chromosome {d_info['chromosome']})
+                    * **Target Motif:** `5'-{motif}-3'` ({feats['total_motif_occurrences']} total occurrences verified)
+                    * **Identified Repeat Tract:** **{repeats} Consecutive Repeats** (Nucleotide coordinates: `{feats['locus_start']}` to `{feats['locus_end']}`)
+                    * **Machine Learning Prediction:** **{predicted_label}** (Confidence: **{confidence:.1f}%**)
+                    * **Clinical Recommendation:** {rec_text}
+                    """)
 
                 # Summary Counters
                 c1, c2, c3, c4 = st.columns(4)
                 c1.metric("Sequence Length", f"{len(sequence):,} bp")
                 c2.metric("Max Repeat Count", f"{repeats} repeats")
-                c3.metric(f"Total '{motif}' Matches", f"{feats['total_motif_occurrences']}")
+                c3.metric(f"Total '{motif}' Hits", f"{feats['total_motif_occurrences']}")
                 c4.metric("Model Confidence", f"{confidence:.1f}%")
 
     # TAB 2: HISTORY
@@ -386,7 +309,7 @@ def render_dashboard():
 
             m1, m2, m3 = st.columns(3)
             m1.metric("Total Analyses", len(df_h))
-            m2.metric("High-Risk Detections", len(df_h[df_h["risk_level"] == "High"]))
+            m2.metric("High-Risk Detections", len(df_h[df_h["risk_level"] == "High Risk"]))
             m3.metric("Average Repeat Count", f"{df_h['max_repeats'].mean():.1f} repeats")
 
             st.divider()
