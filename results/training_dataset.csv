@@ -1,0 +1,164 @@
+sequence_len,motif,max_consecutive_repeats,total_motif_occurrences,motif_density_per_kb,gc_content_ratio,expected_motif_count,z_enrichment_score,z_comparisons,comparisons_saved,efficiency_ratio,locus_start,locus_end,disease,label,label_name
+135,CAG,6,8,59.259,0.7111,2.47,3.56,195,210,0.5185,51,69,Huntington_Disease,0,Normal
+141,CAG,8,10,70.922,0.7092,2.58,4.67,203,220,0.5201,51,75,Huntington_Disease,0,Normal
+147,CAG,10,12,81.633,0.7075,2.69,5.73,211,230,0.5215,51,81,Huntington_Disease,0,Normal
+153,CAG,12,14,91.503,0.7059,2.8,6.75,219,240,0.5229,51,87,Huntington_Disease,0,Normal
+159,CAG,14,16,100.629,0.7044,2.92,7.74,227,250,0.5241,51,93,Huntington_Disease,0,Normal
+165,CAG,16,18,109.091,0.703,3.03,8.69,235,260,0.5253,51,99,Huntington_Disease,0,Normal
+171,CAG,18,20,116.959,0.7018,3.14,9.6,243,270,0.5263,51,105,Huntington_Disease,0,Normal
+177,CAG,20,22,124.294,0.7006,3.25,10.49,251,280,0.5273,51,111,Huntington_Disease,0,Normal
+183,CAG,22,24,131.148,0.6995,3.36,11.36,259,290,0.5282,51,117,Huntington_Disease,0,Normal
+189,CAG,24,26,137.566,0.6984,3.48,12.2,267,300,0.5291,51,123,Huntington_Disease,0,Normal
+195,CAG,26,28,143.59,0.6974,3.59,13.01,275,310,0.5299,51,129,Huntington_Disease,0,Normal
+201,CAG,28,30,149.254,0.6965,3.7,13.8,283,320,0.5307,51,135,Huntington_Disease,1,Carrier
+207,CAG,30,32,154.589,0.6957,3.81,14.57,291,330,0.5314,51,141,Huntington_Disease,1,Carrier
+213,CAG,32,34,159.624,0.6948,3.92,15.33,299,340,0.5321,51,147,Huntington_Disease,1,Carrier
+219,CAG,34,36,164.384,0.6941,4.03,16.06,307,350,0.5327,51,153,Huntington_Disease,1,Carrier
+225,CAG,36,38,168.889,0.6933,4.15,16.78,315,360,0.5333,51,159,Huntington_Disease,1,Carrier
+228,CAG,37,39,171.053,0.693,4.2,17.13,319,365,0.5336,51,162,Huntington_Disease,2,Reduced Penetrance
+231,CAG,38,40,173.16,0.6926,4.26,17.48,323,370,0.5339,51,165,Huntington_Disease,2,Reduced Penetrance
+234,CAG,39,41,175.214,0.6923,4.31,17.83,327,375,0.5342,51,168,Huntington_Disease,2,Reduced Penetrance
+237,CAG,40,42,177.215,0.692,4.37,18.17,331,380,0.5345,51,171,Huntington_Disease,2,Reduced Penetrance
+240,CAG,41,43,179.167,0.6917,4.43,18.51,335,385,0.5347,51,174,Huntington_Disease,3,Pathogenic
+264,CAG,49,51,193.182,0.6894,4.87,21.1,367,425,0.5366,51,198,Huntington_Disease,3,Pathogenic
+288,CAG,57,59,204.861,0.6875,5.32,23.5,399,465,0.5382,51,222,Huntington_Disease,3,Pathogenic
+312,CAG,65,67,214.744,0.6859,5.76,25.75,431,505,0.5395,51,246,Huntington_Disease,3,Pathogenic
+336,CAG,73,75,223.214,0.6845,6.21,27.87,463,545,0.5407,51,270,Huntington_Disease,3,Pathogenic
+135,CGG,5,6,44.444,0.7481,7.07,-0.41,195,210,0.5185,54,69,Fragile_X_Syndrome,0,Normal
+141,CGG,7,8,56.738,0.7589,7.7,0.11,203,220,0.5201,54,75,Fragile_X_Syndrome,0,Normal
+147,CGG,9,10,68.027,0.7687,8.35,0.59,211,230,0.5215,54,81,Fragile_X_Syndrome,0,Normal
+153,CGG,11,12,78.431,0.7778,9.0,1.03,219,240,0.5229,54,87,Fragile_X_Syndrome,0,Normal
+159,CGG,13,14,88.05,0.7862,9.66,1.44,227,250,0.5241,54,93,Fragile_X_Syndrome,0,Normal
+165,CGG,15,16,96.97,0.7939,10.32,1.83,235,260,0.5253,54,99,Fragile_X_Syndrome,0,Normal
+171,CGG,17,18,105.263,0.8012,10.99,2.19,243,270,0.5263,54,105,Fragile_X_Syndrome,0,Normal
+177,CGG,19,20,112.994,0.8079,11.67,2.52,251,280,0.5273,54,111,Fragile_X_Syndrome,0,Normal
+183,CGG,21,22,120.219,0.8142,12.35,2.84,259,290,0.5282,54,117,Fragile_X_Syndrome,0,Normal
+189,CGG,23,24,126.984,0.8201,13.03,3.15,267,300,0.5291,54,123,Fragile_X_Syndrome,0,Normal
+195,CGG,25,26,133.333,0.8256,13.72,3.44,275,310,0.5299,54,129,Fragile_X_Syndrome,0,Normal
+201,CGG,27,28,139.303,0.8308,14.41,3.72,283,320,0.5307,54,135,Fragile_X_Syndrome,0,Normal
+207,CGG,29,30,144.928,0.8357,15.1,3.98,291,330,0.5314,54,141,Fragile_X_Syndrome,0,Normal
+213,CGG,31,32,150.235,0.8404,15.8,4.23,299,340,0.5321,54,147,Fragile_X_Syndrome,0,Normal
+219,CGG,33,34,155.251,0.8447,16.5,4.48,307,350,0.5327,54,153,Fragile_X_Syndrome,0,Normal
+225,CGG,35,36,160.0,0.8489,17.2,4.72,315,360,0.5333,54,159,Fragile_X_Syndrome,0,Normal
+231,CGG,37,38,164.502,0.8528,17.91,4.94,323,370,0.5339,54,165,Fragile_X_Syndrome,0,Normal
+237,CGG,39,40,168.776,0.8565,18.62,5.16,331,380,0.5345,54,171,Fragile_X_Syndrome,0,Normal
+243,CGG,41,42,172.84,0.8601,19.33,5.38,339,390,0.535,54,177,Fragile_X_Syndrome,0,Normal
+249,CGG,43,44,176.707,0.8635,20.04,5.58,347,400,0.5355,54,183,Fragile_X_Syndrome,0,Normal
+255,CGG,45,46,180.392,0.8667,20.75,5.78,355,410,0.5359,54,189,Fragile_X_Syndrome,1,Carrier
+261,CGG,47,48,183.908,0.8697,21.46,5.98,363,420,0.5364,54,195,Fragile_X_Syndrome,1,Carrier
+267,CGG,49,50,187.266,0.8727,22.18,6.17,371,430,0.5368,54,201,Fragile_X_Syndrome,1,Carrier
+273,CGG,51,52,190.476,0.8755,22.9,6.35,379,440,0.5372,54,207,Fragile_X_Syndrome,1,Carrier
+279,CGG,53,54,193.548,0.8781,23.62,6.54,387,450,0.5376,54,213,Fragile_X_Syndrome,1,Carrier
+285,CGG,55,56,196.491,0.8807,24.34,6.71,395,460,0.538,54,219,Fragile_X_Syndrome,2,Reduced Penetrance
+393,CGG,91,92,234.097,0.9135,37.45,9.37,539,640,0.5428,54,327,Fragile_X_Syndrome,2,Reduced Penetrance
+501,CGG,127,128,255.489,0.9321,50.72,11.45,683,820,0.5456,54,435,Fragile_X_Syndrome,2,Reduced Penetrance
+609,CGG,163,164,269.294,0.9442,64.07,13.2,827,1000,0.5473,54,543,Fragile_X_Syndrome,2,Reduced Penetrance
+717,CGG,199,200,278.94,0.9526,77.47,14.74,971,1180,0.5486,54,651,Fragile_X_Syndrome,2,Reduced Penetrance
+720,CGG,200,201,279.167,0.9528,77.84,14.78,975,1185,0.5486,54,654,Fragile_X_Syndrome,3,Pathogenic
+840,CGG,240,241,286.905,0.9595,92.76,16.32,1135,1385,0.5496,54,774,Fragile_X_Syndrome,3,Pathogenic
+960,CGG,280,281,292.708,0.9646,107.7,17.72,1295,1585,0.5503,54,894,Fragile_X_Syndrome,3,Pathogenic
+1080,CGG,320,321,297.222,0.9685,122.65,19.02,1455,1785,0.5509,54,1014,Fragile_X_Syndrome,3,Pathogenic
+1200,CGG,360,361,300.833,0.9717,137.61,20.24,1615,1985,0.5514,54,1134,Fragile_X_Syndrome,3,Pathogenic
+135,GAA,5,7,51.852,0.6741,1.21,5.29,176,229,0.5654,54,69,Friedreich_Ataxia,0,Normal
+141,GAA,7,9,63.83,0.6596,1.35,6.62,184,239,0.565,54,75,Friedreich_Ataxia,0,Normal
+147,GAA,9,11,74.83,0.6463,1.49,7.84,192,249,0.5646,54,81,Friedreich_Ataxia,0,Normal
+153,GAA,11,13,84.967,0.634,1.62,8.97,200,259,0.5643,54,87,Friedreich_Ataxia,0,Normal
+159,GAA,13,15,94.34,0.6226,1.76,10.03,208,269,0.5639,54,93,Friedreich_Ataxia,0,Normal
+165,GAA,15,17,103.03,0.6121,1.9,11.02,216,279,0.5636,54,99,Friedreich_Ataxia,0,Normal
+171,GAA,17,19,111.111,0.6023,2.04,11.96,224,289,0.5634,54,105,Friedreich_Ataxia,0,Normal
+177,GAA,19,21,118.644,0.5932,2.17,12.86,232,299,0.5631,54,111,Friedreich_Ataxia,0,Normal
+183,GAA,21,23,125.683,0.5847,2.31,13.71,240,309,0.5628,54,117,Friedreich_Ataxia,0,Normal
+189,GAA,23,25,132.275,0.5767,2.44,14.53,248,319,0.5626,54,123,Friedreich_Ataxia,0,Normal
+195,GAA,25,27,138.462,0.5692,2.57,15.32,256,329,0.5624,54,129,Friedreich_Ataxia,0,Normal
+201,GAA,27,29,144.279,0.5622,2.71,16.09,264,339,0.5622,54,135,Friedreich_Ataxia,0,Normal
+207,GAA,29,31,149.758,0.5556,2.84,16.83,272,349,0.562,54,141,Friedreich_Ataxia,0,Normal
+213,GAA,31,33,154.93,0.5493,2.97,17.55,280,359,0.5618,54,147,Friedreich_Ataxia,0,Normal
+219,GAA,33,35,159.817,0.5434,3.1,18.24,288,369,0.5616,54,153,Friedreich_Ataxia,0,Normal
+222,GAA,34,36,162.162,0.5405,3.17,18.58,292,374,0.5616,54,156,Friedreich_Ataxia,1,Carrier
+228,GAA,36,38,166.667,0.5351,3.3,19.25,300,384,0.5614,54,162,Friedreich_Ataxia,1,Carrier
+234,GAA,38,40,170.94,0.5299,3.43,19.91,308,394,0.5613,54,168,Friedreich_Ataxia,1,Carrier
+240,GAA,40,42,175.0,0.525,3.55,20.55,316,404,0.5611,54,174,Friedreich_Ataxia,1,Carrier
+246,GAA,42,44,178.862,0.5203,3.68,21.17,324,414,0.561,54,180,Friedreich_Ataxia,1,Carrier
+252,GAA,44,46,182.54,0.5159,3.81,21.78,332,424,0.5608,54,186,Friedreich_Ataxia,1,Carrier
+258,GAA,46,48,186.047,0.5116,3.94,22.38,340,434,0.5607,54,192,Friedreich_Ataxia,1,Carrier
+264,GAA,48,50,189.394,0.5076,4.06,22.97,348,444,0.5606,54,198,Friedreich_Ataxia,1,Carrier
+270,GAA,50,52,192.593,0.5037,4.19,23.55,356,454,0.5605,54,204,Friedreich_Ataxia,1,Carrier
+276,GAA,52,54,195.652,0.5,4.31,24.12,364,464,0.5604,54,210,Friedreich_Ataxia,1,Carrier
+282,GAA,54,56,198.582,0.4965,4.44,24.67,372,474,0.5603,54,216,Friedreich_Ataxia,1,Carrier
+288,GAA,56,58,201.389,0.4931,4.56,25.22,380,484,0.5602,54,222,Friedreich_Ataxia,1,Carrier
+294,GAA,58,60,204.082,0.4898,4.69,25.76,388,494,0.5601,54,228,Friedreich_Ataxia,1,Carrier
+300,GAA,60,62,206.667,0.4867,4.81,26.29,396,504,0.56,54,234,Friedreich_Ataxia,1,Carrier
+306,GAA,62,64,209.15,0.4837,4.93,26.81,404,514,0.5599,54,240,Friedreich_Ataxia,1,Carrier
+312,GAA,64,66,211.538,0.4808,5.06,27.33,412,524,0.5598,54,246,Friedreich_Ataxia,1,Carrier
+318,GAA,66,68,213.836,0.478,5.18,27.84,420,534,0.5597,54,252,Friedreich_Ataxia,2,Reduced Penetrance
+342,GAA,74,76,222.222,0.4678,5.66,29.8,452,574,0.5595,54,276,Friedreich_Ataxia,2,Reduced Penetrance
+366,GAA,82,84,229.508,0.459,6.15,31.67,484,614,0.5592,54,300,Friedreich_Ataxia,2,Reduced Penetrance
+390,GAA,90,92,235.897,0.4513,6.62,33.46,516,654,0.559,54,324,Friedreich_Ataxia,2,Reduced Penetrance
+414,GAA,98,100,241.546,0.4444,7.1,35.17,548,694,0.5588,54,348,Friedreich_Ataxia,2,Reduced Penetrance
+420,GAA,100,102,242.857,0.4429,7.22,35.59,556,704,0.5587,54,354,Friedreich_Ataxia,3,Pathogenic
+480,GAA,120,122,254.167,0.4292,8.39,39.57,636,804,0.5583,54,414,Friedreich_Ataxia,3,Pathogenic
+540,GAA,140,142,262.963,0.4185,9.55,43.24,716,904,0.558,54,474,Friedreich_Ataxia,3,Pathogenic
+600,GAA,160,162,270.0,0.41,10.7,46.66,796,1004,0.5578,54,534,Friedreich_Ataxia,3,Pathogenic
+660,GAA,180,182,275.758,0.403,11.85,49.88,876,1104,0.5576,54,594,Friedreich_Ataxia,3,Pathogenic
+135,CTG,5,8,59.259,0.7111,2.47,3.56,195,210,0.5185,54,69,Myotonic_Dystrophy_Type_1,0,Normal
+141,CTG,7,10,70.922,0.7092,2.58,4.67,203,220,0.5201,54,75,Myotonic_Dystrophy_Type_1,0,Normal
+147,CTG,9,12,81.633,0.7075,2.69,5.73,211,230,0.5215,54,81,Myotonic_Dystrophy_Type_1,0,Normal
+153,CTG,11,14,91.503,0.7059,2.8,6.75,219,240,0.5229,54,87,Myotonic_Dystrophy_Type_1,0,Normal
+159,CTG,13,16,100.629,0.7044,2.92,7.74,227,250,0.5241,54,93,Myotonic_Dystrophy_Type_1,0,Normal
+165,CTG,15,18,109.091,0.703,3.03,8.69,235,260,0.5253,54,99,Myotonic_Dystrophy_Type_1,0,Normal
+171,CTG,17,20,116.959,0.7018,3.14,9.6,243,270,0.5263,54,105,Myotonic_Dystrophy_Type_1,0,Normal
+177,CTG,19,22,124.294,0.7006,3.25,10.49,251,280,0.5273,54,111,Myotonic_Dystrophy_Type_1,0,Normal
+183,CTG,21,24,131.148,0.6995,3.36,11.36,259,290,0.5282,54,117,Myotonic_Dystrophy_Type_1,0,Normal
+189,CTG,23,26,137.566,0.6984,3.48,12.2,267,300,0.5291,54,123,Myotonic_Dystrophy_Type_1,0,Normal
+195,CTG,25,28,143.59,0.6974,3.59,13.01,275,310,0.5299,54,129,Myotonic_Dystrophy_Type_1,0,Normal
+201,CTG,27,30,149.254,0.6965,3.7,13.8,283,320,0.5307,54,135,Myotonic_Dystrophy_Type_1,0,Normal
+207,CTG,29,32,154.589,0.6957,3.81,14.57,291,330,0.5314,54,141,Myotonic_Dystrophy_Type_1,0,Normal
+213,CTG,31,34,159.624,0.6948,3.92,15.33,299,340,0.5321,54,147,Myotonic_Dystrophy_Type_1,0,Normal
+219,CTG,33,36,164.384,0.6941,4.03,16.06,307,350,0.5327,54,153,Myotonic_Dystrophy_Type_1,0,Normal
+225,CTG,35,38,168.889,0.6933,4.15,16.78,315,360,0.5333,54,159,Myotonic_Dystrophy_Type_1,1,Carrier
+231,CTG,37,40,173.16,0.6926,4.26,17.48,323,370,0.5339,54,165,Myotonic_Dystrophy_Type_1,1,Carrier
+237,CTG,39,42,177.215,0.692,4.37,18.17,331,380,0.5345,54,171,Myotonic_Dystrophy_Type_1,1,Carrier
+243,CTG,41,44,181.07,0.6914,4.48,18.84,339,390,0.535,54,177,Myotonic_Dystrophy_Type_1,1,Carrier
+249,CTG,43,46,184.739,0.6908,4.59,19.5,347,400,0.5355,54,183,Myotonic_Dystrophy_Type_1,1,Carrier
+255,CTG,45,48,188.235,0.6902,4.7,20.15,355,410,0.5359,54,189,Myotonic_Dystrophy_Type_1,1,Carrier
+261,CTG,47,50,191.571,0.6897,4.82,20.78,363,420,0.5364,54,195,Myotonic_Dystrophy_Type_1,1,Carrier
+267,CTG,49,52,194.757,0.6891,4.93,21.4,371,430,0.5368,54,201,Myotonic_Dystrophy_Type_1,1,Carrier
+270,CTG,50,53,196.296,0.6889,4.98,21.71,375,435,0.537,54,204,Myotonic_Dystrophy_Type_1,2,Reduced Penetrance
+306,CTG,62,65,212.418,0.6863,5.65,25.2,423,495,0.5392,54,240,Myotonic_Dystrophy_Type_1,2,Reduced Penetrance
+342,CTG,74,77,225.146,0.6842,6.32,28.38,471,555,0.5409,54,276,Myotonic_Dystrophy_Type_1,2,Reduced Penetrance
+378,CTG,86,89,235.45,0.6825,6.99,31.32,519,615,0.5423,54,312,Myotonic_Dystrophy_Type_1,2,Reduced Penetrance
+414,CTG,98,101,243.961,0.6812,7.66,34.05,567,675,0.5435,54,348,Myotonic_Dystrophy_Type_1,2,Reduced Penetrance
+420,CTG,100,103,245.238,0.681,7.77,34.49,575,685,0.5437,54,354,Myotonic_Dystrophy_Type_1,3,Pathogenic
+480,CTG,120,123,256.25,0.6792,8.88,38.66,655,785,0.5451,54,414,Myotonic_Dystrophy_Type_1,3,Pathogenic
+540,CTG,140,143,264.815,0.6778,9.99,42.47,735,885,0.5463,54,474,Myotonic_Dystrophy_Type_1,3,Pathogenic
+600,CTG,160,163,271.667,0.6767,11.1,46.01,815,985,0.5472,54,534,Myotonic_Dystrophy_Type_1,3,Pathogenic
+660,CTG,180,183,277.273,0.6758,12.22,49.32,895,1085,0.548,54,594,Myotonic_Dystrophy_Type_1,3,Pathogenic
+135,CAG,6,8,59.259,0.7111,2.47,3.56,195,210,0.5185,51,69,Spinocerebellar_Ataxia_Type_1,0,Normal
+141,CAG,8,10,70.922,0.7092,2.58,4.67,203,220,0.5201,51,75,Spinocerebellar_Ataxia_Type_1,0,Normal
+147,CAG,10,12,81.633,0.7075,2.69,5.73,211,230,0.5215,51,81,Spinocerebellar_Ataxia_Type_1,0,Normal
+153,CAG,12,14,91.503,0.7059,2.8,6.75,219,240,0.5229,51,87,Spinocerebellar_Ataxia_Type_1,0,Normal
+159,CAG,14,16,100.629,0.7044,2.92,7.74,227,250,0.5241,51,93,Spinocerebellar_Ataxia_Type_1,0,Normal
+165,CAG,16,18,109.091,0.703,3.03,8.69,235,260,0.5253,51,99,Spinocerebellar_Ataxia_Type_1,0,Normal
+171,CAG,18,20,116.959,0.7018,3.14,9.6,243,270,0.5263,51,105,Spinocerebellar_Ataxia_Type_1,0,Normal
+177,CAG,20,22,124.294,0.7006,3.25,10.49,251,280,0.5273,51,111,Spinocerebellar_Ataxia_Type_1,0,Normal
+183,CAG,22,24,131.148,0.6995,3.36,11.36,259,290,0.5282,51,117,Spinocerebellar_Ataxia_Type_1,0,Normal
+189,CAG,24,26,137.566,0.6984,3.48,12.2,267,300,0.5291,51,123,Spinocerebellar_Ataxia_Type_1,0,Normal
+195,CAG,26,28,143.59,0.6974,3.59,13.01,275,310,0.5299,51,129,Spinocerebellar_Ataxia_Type_1,0,Normal
+201,CAG,28,30,149.254,0.6965,3.7,13.8,283,320,0.5307,51,135,Spinocerebellar_Ataxia_Type_1,0,Normal
+207,CAG,30,32,154.589,0.6957,3.81,14.57,291,330,0.5314,51,141,Spinocerebellar_Ataxia_Type_1,0,Normal
+213,CAG,32,34,159.624,0.6948,3.92,15.33,299,340,0.5321,51,147,Spinocerebellar_Ataxia_Type_1,0,Normal
+219,CAG,34,36,164.384,0.6941,4.03,16.06,307,350,0.5327,51,153,Spinocerebellar_Ataxia_Type_1,0,Normal
+225,CAG,36,38,168.889,0.6933,4.15,16.78,315,360,0.5333,51,159,Spinocerebellar_Ataxia_Type_1,0,Normal
+228,CAG,37,39,171.053,0.693,4.2,17.13,319,365,0.5336,51,162,Spinocerebellar_Ataxia_Type_1,1,Carrier
+234,CAG,39,41,175.214,0.6923,4.31,17.83,327,375,0.5342,51,168,Spinocerebellar_Ataxia_Type_1,1,Carrier
+237,CAG,40,42,177.215,0.692,4.37,18.17,331,380,0.5345,51,171,Spinocerebellar_Ataxia_Type_1,2,Reduced Penetrance
+240,CAG,41,43,179.167,0.6917,4.43,18.51,335,385,0.5347,51,174,Spinocerebellar_Ataxia_Type_1,2,Reduced Penetrance
+243,CAG,42,44,181.07,0.6914,4.48,18.84,339,390,0.535,51,177,Spinocerebellar_Ataxia_Type_1,2,Reduced Penetrance
+246,CAG,43,45,182.927,0.6911,4.54,19.17,343,395,0.5352,51,180,Spinocerebellar_Ataxia_Type_1,2,Reduced Penetrance
+249,CAG,44,46,184.739,0.6908,4.59,19.5,347,400,0.5355,51,183,Spinocerebellar_Ataxia_Type_1,2,Reduced Penetrance
+252,CAG,45,47,186.508,0.6905,4.65,19.83,351,405,0.5357,51,186,Spinocerebellar_Ataxia_Type_1,3,Pathogenic
+276,CAG,53,55,199.275,0.6884,5.09,22.32,383,445,0.5374,51,210,Spinocerebellar_Ataxia_Type_1,3,Pathogenic
+300,CAG,61,63,210.0,0.6867,5.54,24.64,415,485,0.5389,51,234,Spinocerebellar_Ataxia_Type_1,3,Pathogenic
+324,CAG,69,71,219.136,0.6852,5.99,26.82,447,525,0.5401,51,258,Spinocerebellar_Ataxia_Type_1,3,Pathogenic
+348,CAG,77,79,227.011,0.6839,6.43,28.88,479,565,0.5412,51,282,Spinocerebellar_Ataxia_Type_1,3,Pathogenic
+372,CAG,85,87,233.871,0.6828,6.88,30.84,511,605,0.5421,51,306,Spinocerebellar_Ataxia_Type_1,3,Pathogenic

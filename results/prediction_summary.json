@@ -1,0 +1,116 @@
+[
+  {
+    "file_name": "KJ535072.fasta",
+    "header": "KJ535072.1 Homo sapiens clone HTT_iso-A_fetal-F12 huntingtin isoform A (HTT) mRNA, complete cds, alternatively spliced",
+    "sequence_length_bp": 1778,
+    "total_motif_occurrences": 85,
+    "max_consecutive_repeats": 19,
+    "repeat_locus": {
+      "start": 51,
+      "end": 108
+    },
+    "z_comparisons": 2334,
+    "naive_est_comparisons": 5334,
+    "comparisons_saved": 3000,
+    "diagnosis": {
+      "status": "NORMAL (NEGATIVE)",
+      "risk_level": "Low",
+      "clinical_interpretation": "19 repeats: Normal range (under 27). Not at risk of HD; alleles are stable and will not expand in future generations."
+    }
+  },
+  {
+    "file_name": "NM_002024.6.fasta",
+    "header": "NM_002024.6 Homo sapiens fragile X messenger ribonucleoprotein 1 (FMR1), transcript variant ISO1, mRNA",
+    "sequence_length_bp": 4441,
+    "total_motif_occurrences": 83,
+    "max_consecutive_repeats": 1,
+    "repeat_locus": {
+      "start": 2,
+      "end": 5
+    },
+    "z_comparisons": 5180,
+    "naive_est_comparisons": 13323,
+    "comparisons_saved": 8143,
+    "diagnosis": {
+      "status": "NORMAL (NEGATIVE)",
+      "risk_level": "Low",
+      "clinical_interpretation": "1 repeats: Normal range (under 27). Not at risk of HD; alleles are stable and will not expand in future generations."
+    }
+  },
+  {
+    "file_name": "patient_01_carrier_31_repeats.fasta",
+    "header": "patient_01_carrier_31_repeats.fasta | Patient 01 (Intermediate / Carrier) | In-vitro simulated allele",
+    "sequence_length_bp": 1814,
+    "total_motif_occurrences": 97,
+    "max_consecutive_repeats": 31,
+    "repeat_locus": {
+      "start": 51,
+      "end": 144
+    },
+    "z_comparisons": 2382,
+    "naive_est_comparisons": 5442,
+    "comparisons_saved": 3060,
+    "diagnosis": {
+      "status": "INTERMEDIATE / CARRIER",
+      "risk_level": "Moderate",
+      "clinical_interpretation": "31 repeats: Intermediate allele. Individual will NOT develop HD, but repeat tract may expand during transmission to offspring."
+    }
+  },
+  {
+    "file_name": "patient_02_reduced_38_repeats.fasta",
+    "header": "patient_02_reduced_38_repeats.fasta | Patient 02 (Reduced Penetrance / Borderline) | In-vitro simulated allele",
+    "sequence_length_bp": 1835,
+    "total_motif_occurrences": 104,
+    "max_consecutive_repeats": 38,
+    "repeat_locus": {
+      "start": 51,
+      "end": 165
+    },
+    "z_comparisons": 2410,
+    "naive_est_comparisons": 5505,
+    "comparisons_saved": 3095,
+    "diagnosis": {
+      "status": "REDUCED PENETRANCE (AT RISK)",
+      "risk_level": "Elevated",
+      "clinical_interpretation": "38 repeats: Reduced penetrance. Individual may or may not develop symptoms in their lifetime (often late-onset)."
+    }
+  },
+  {
+    "file_name": "patient_03_pathogenic_46_repeats.fasta",
+    "header": "patient_03_pathogenic_46_repeats.fasta | Patient 03 (Full Penetrance / Pathogenic HD) | In-vitro simulated allele",
+    "sequence_length_bp": 1859,
+    "total_motif_occurrences": 112,
+    "max_consecutive_repeats": 46,
+    "repeat_locus": {
+      "start": 51,
+      "end": 189
+    },
+    "z_comparisons": 2442,
+    "naive_est_comparisons": 5577,
+    "comparisons_saved": 3135,
+    "diagnosis": {
+      "status": "FULL PENETRANCE (PATHOGENIC / POSITIVE)",
+      "risk_level": "High",
+      "clinical_interpretation": "46 repeats: Full penetrance. Individual is genetically positive and will develop Huntington's Disease symptoms."
+    }
+  },
+  {
+    "file_name": "patient_04_juvenile_72_repeats.fasta",
+    "header": "patient_04_juvenile_72_repeats.fasta | Patient 04 (Juvenile-Onset HD Expansion) | In-vitro simulated allele",
+    "sequence_length_bp": 1937,
+    "total_motif_occurrences": 138,
+    "max_consecutive_repeats": 72,
+    "repeat_locus": {
+      "start": 51,
+      "end": 267
+    },
+    "z_comparisons": 2546,
+    "naive_est_comparisons": 5811,
+    "comparisons_saved": 3265,
+    "diagnosis": {
+      "status": "FULL PENETRANCE (PATHOGENIC / POSITIVE)",
+      "risk_level": "High",
+      "clinical_interpretation": "72 repeats: Full penetrance. Individual is genetically positive and will develop Huntington's Disease symptoms."
+    }
+  }
+]

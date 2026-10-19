@@ -1,0 +1,50 @@
+====================================================================================================
+                        DEPARTMENT OF MOLECULAR GENETICS & PATHOLOGY
+                             HUNTINGTON'S DISEASE DIAGNOSTIC PANEL
+====================================================================================================
+
+PATIENT / SPECIMEN INFORMATION
+----------------------------------------------------------------------------------------------------
+Specimen ID       : PATIENT_01_CARRIER_31_REPEATS
+Accession Source  : NCBI GenBank Genomic Pipeline
+Collection Date   : October 19, 2026
+Test Requested    : HTT Gene (CAG)n Trinucleotide Repeat Expansion Diagnostic Assay
+Target Chromosome : 4p16.3 (Exon 1 of Huntingtin Gene)
+Assay Methodology : Linear-Time Z-Algorithm Sequence Verification (O(N + M))
+
+====================================================================================================
+DIAGNOSTIC TEST RESULTS
+====================================================================================================
+
+Target Motif                : 5'-CAG-3' (Polyglutamine encoding tract)
+Analyzed DNA Length         : 1814 bp
+Detected Repeat Tract Locus : Nucleotide positions 51 to 144
+MAXIMUM CONSECUTIVE REPEAT  : 31 CAG REPEATS
+
+OVERALL INTERPRETATION:
+----------------------------------------------------------------------------------------------------
+>>> INTERMEDIATE ALLELE (MUTATION CARRIER / NON-PENETRANT) <<<
+
+CLINICAL REFERENCE THRESHOLDS (ACMG Guidelines):
+  * < 27 CAG Repeats   : Normal Range (Negative) - Stable transmission
+  * 27 - 35 CAG Repeats: Intermediate Alleles - Mutable / Pre-mutation
+  * 36 - 39 CAG Repeats: Reduced Penetrance - At risk for late-onset symptoms
+  * >= 40 CAG Repeats  : Full Penetrance (Pathogenic / Disease Confirmed)
+
+BIOINFORMATIC & COMPUTATIONAL VALIDATION (Z-ALGORITHM TELEMETRY):
+----------------------------------------------------------------------------------------------------
+* Exact Pattern Algorithm : Linear Z-Algorithm with active [L, R] prefix window
+* Direct Comparisons Used : 2382
+* Redundant Checks Avoided: ~3060 comparisons saved vs naive search
+* Algorithmic Complexity  : O(|P| + |T|) exact verification completed without heuristic error
+
+CLINICAL IMPLICATION & RECOMMENDATION:
+----------------------------------------------------------------------------------------------------
+Individual is non-symptomatic. Genetic counseling recommended regarding transmission risk to future offspring.
+Specific Detail: 31 repeats: Intermediate allele. Individual will NOT develop HD, but repeat tract may expand during transmission to offspring.
+
+====================================================================================================
+Sign-off:
+Molecular Genetic Pathologist, MD, FACMG
+Director of Computational Diagnostics & Neurogenetics
+====================================================================================================
