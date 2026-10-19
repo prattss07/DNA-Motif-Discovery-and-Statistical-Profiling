@@ -40,65 +40,7 @@ All sequences analyzed are genuine, peer-reviewed records downloaded directly vi
 
 ---
 
-## Core Algorithmic Architecture
 
-### 1. The Classical Linear-Time Z-Algorithm ($O(N + M)$)
-For a string $S = P \mathbin{\$} T$ of length $|P| + 1 + |T|$ (where $P$ is the motif and $T$ is the genome), the algorithm computes the array $Z$:
-$$Z[i] = \max \{ k \mid S[i \dots i+k-1] = S[0 \dots k-1] \}$$
-
-* **Prefix Window $[L, R]$:** Maintains the rightmost matching segment. When index $i \le R$, previous computations are reused in $O(1)$ time, skipping redundant character comparisons.
-* **Tandem Repeat Clustering:** Discovered match indices are evaluated for consecutive adjacency ($k, k+3, k+6, \dots$) to extract continuous repeat chains.
-* **Skip Efficiency:** Bypasses between **53% and 61% of direct comparisons** compared to a naive scan.
-
-### 2. Statistical Background Model & Machine Learning
-* **Markov Null Model:** Calculates expected motif counts based on nucleotide background composition ($GC$-ratio).
-* **Z-Score Enrichment:** Measures statistical deviation of observed motif hits above random expectation:
-  $$Z_{\text{enrichment}} = \frac{\text{Observed} - E}{\sigma}$$
-* **Classification Engine:** Multi-feature Random Forest model trained on quantitative biological and algorithmic metrics to output class probabilities and ACMG clinical risk levels (**Normal**, **Carrier**, **Pathogenic**).
-
----
-
-## Project Structure
-
-```
-DNA-Motif-Discovery-and-Statistical-Profiling/
-│
-├── data/                               # Authentic NCBI GenBank FASTA files
-│   ├── KJ535072_Huntington_Disease.fasta
-│   ├── NM_002111_Huntington_Disease.fasta
-│   ├── L12392_Huntington_Disease.fasta
-│   ├── L27350_Huntington_Disease.fasta
-│   ├── NM_002024_Fragile_X_Syndrome.fasta
-│   ├── L29074_Fragile_X_Syndrome.fasta
-│   ├── AF305880_Fragile_X_Syndrome.fasta
-│   ├── NM_000144_Friedreich_Ataxia.fasta
-│   ├── U43748_Friedreich_Ataxia.fasta
-│   └── U43750_Friedreich_Ataxia.fasta
-│
-├── src/                                # Core source code modules
-│   ├── app.py                          # Streamlit web application & clinical dashboard
-│   ├── auth.py                         # User authentication & SQLite session tracking
-│   ├── z_algorithm.py                  # Linear-time Z-Algorithm implementation O(N+M)
-│   ├── feature_extractor.py            # Biological & telemetry feature engineering
-│   ├── analyzer.py                     # FASTA parsing, tandem chain detection & ACMG logic
-│   ├── disease_registry.py             # Multi-disease diagnostic catalog & accessions
-│   ├── train_model.py                  # Random Forest training & serialization
-│   ├── predict.py                      # Evaluation-time CLI tool
-│   ├── run_real_pipeline.py            # Batch real NCBI dataset runner
-│   └── download_ncbi_real_data.py      # Automated NCBI Entrez downloader
-│
-├── models/                             # Serialized ML models
-│   └── z_motif_rf_model.pkl
-│
-├── results/                            # Benchmark reports and user analytics
-│   ├── real_ncbi_analysis_summary.json # Complete telemetry and diagnostic data
-│   ├── prediction_summary.json         # Summary of patient classifications
-│   └── users_analytics.db              # SQLite user credentials & audit logs
-│
-└── README.md                           # Documentation
-```
-
----
 
 
 
