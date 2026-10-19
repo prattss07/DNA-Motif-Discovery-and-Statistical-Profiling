@@ -1,13 +1,14 @@
 """
 DNA Motif Discovery & Clinical Diagnostic Suite
-Clean, simple user interface with detailed textual diagnostic findings
-and local / custom sequence inputs.
+Clean, simple user interface with standard structured clinical reporting
+and an explicit Run button for pasted DNA sequences.
 """
 
 import os
 import sys
 import pickle
 import json
+from datetime import datetime
 import pandas as pd
 import plotly.express as px
 import streamlit as st
@@ -37,39 +38,62 @@ st.set_page_config(
 # Clean, Theme-Adaptive CSS
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
     html, body, [class*="css"] {
         font-family: 'Inter', sans-serif;
     }
 
-    /* Diagnosis Status Banners */
-    .status-box-normal {
-        border-left: 5px solid #10b981;
-        background-color: rgba(16, 185, 129, 0.08);
-        border-radius: 8px;
-        padding: 20px 24px;
-        margin: 20px 0;
+    code, pre {
+        font-family: 'JetBrains Mono', monospace !important;
     }
-    .status-box-carrier {
-        border-left: 5px solid #f59e0b;
-        background-color: rgba(245, 158, 11, 0.08);
-        border-radius: 8px;
-        padding: 20px 24px;
-        margin: 20px 0;
-    }
-    .status-box-pathogenic {
-        border-left: 5px solid #ef4444;
-        background-color: rgba(239, 68, 68, 0.08);
-        border-radius: 8px;
-        padding: 20px 24px;
+
+    /* Standard Medical Report Box */
+    .clinical-report-card {
+        border: 1px solid rgba(128, 128, 128, 0.25);
+        border-radius: 10px;
+        padding: 22px 26px;
+        background-color: rgba(128, 128, 128, 0.04);
         margin: 20px 0;
     }
 
-    .report-paragraph {
-        font-size: 1.05rem;
-        line-height: 1.7;
-        margin-top: 12px;
+    .report-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 12px 0;
+    }
+
+    .report-table td {
+        padding: 8px 12px;
+        border-bottom: 1px solid rgba(128, 128, 128, 0.15);
+        font-size: 0.95rem;
+    }
+
+    .report-table td.field-label {
+        font-weight: 600;
+        color: #64748b;
+        width: 32%;
+    }
+
+    .report-table td.field-value {
+        font-weight: 500;
+    }
+
+    /* Diagnosis Badges */
+    .badge-normal {
+        color: #10b981;
+        font-weight: 700;
+        font-size: 1.15rem;
+    }
+    .badge-carrier {
+        color: #f59e0b;
+        font-weight: 700;
+        font-size: 1.15rem;
+    }
+    .badge-pathogenic {
+        color: #ef4444;
+        font-weight: 700;
+        font-size: 1.15rem;
     }
 
     /* Tab styling */
@@ -98,60 +122,6 @@ def load_classifier():
         train_models()
     with open(model_path, "rb") as f:
         return pickle.load(f)
-
-
-def generate_textual_report(sample_name: str, disease_name: str, gene: str, motif: str,
-                            repeats: int, locus_start: int, locus_end: int,
-                            total_matches: int, seq_len: int,
-                            predicted_label: str, confidence: float,
-                            clinical_status: str, risk_level: str,
-                            thresh: dict) -> str:
-    """Generates an authentic, fully written diagnostic report in continuous natural English words."""
-
-    condition_display = disease_name.replace("_", " ")
-
-    # Section 1: Overview
-    p1 = (
-        f"A molecular screening of specimen '{sample_name}' (spanning a total analyzed length of {seq_len:,} base pairs) "
-        f"was conducted for {condition_display} targeting the {gene} gene on the human chromosome. "
-        f"The diagnostic assay evaluated the presence, positioning, and tandem expansion of the critical '{motif}' nucleotide motif."
-    )
-
-    # Section 2: Exact Findings
-    p2 = (
-        f"Upon sequence scanning, a total of {total_matches} occurrences of the '{motif}' pattern were verified across the DNA strand. "
-        f"The primary polymorphic locus of interest was identified beginning at nucleotide index {locus_start} and concluding at index {locus_end}. "
-        f"Within this specific segment, the patient's sequence demonstrated an unbroken consecutive repeat tract measuring {repeats} tandem '{motif}' units."
-    )
-
-    # Section 3: Clinical Diagnostic Interpretation
-    if "PATHOGENIC" in clinical_status:
-        p3 = (
-            f"CLINICAL FINDING: POSITIVE FOR PATHOGENIC REPEAT EXPANSION ({risk_level.upper()} RISK). "
-            f"The observed tract of {repeats} repeats significantly exceeds the clinical threshold of {thresh['pathogenic_min']} repeats established by standard medical genetics guidelines. "
-            f"Alleles of this size demonstrate full genetic penetrance, indicating that the patient is genetically positive and affected by {condition_display}. "
-            f"The computational machine learning model corroborates this diagnosis with a classification of '{predicted_label}' at {confidence:.1f}% confidence. "
-            f"Medical referral to a neurogenetics specialist and multidisciplinary care is advised."
-        )
-    elif "CARRIER" in clinical_status or "INTERMEDIATE" in clinical_status:
-        p3 = (
-            f"CLINICAL FINDING: INTERMEDIATE / PRE-MUTATION CARRIER STATE ({risk_level.upper()} RISK). "
-            f"The detected count of {repeats} repeats lies within the intermediate range (between {thresh['normal_max'] + 1} and {thresh['intermediate_max']} repeats). "
-            f"Individuals harboring alleles in this range do not manifest clinical symptoms of {condition_display}. "
-            f"However, this sequence possesses meiotic instability and may undergo further repeat expansion during transmission to biological offspring. "
-            f"The machine learning system classifies this sample as '{predicted_label}' ({confidence:.1f}% confidence). "
-            f"Genetic counseling regarding reproductive risk is recommended."
-        )
-    else:
-        p3 = (
-            f"CLINICAL FINDING: NEGATIVE / NORMAL REFERENCE RANGE ({risk_level.upper()} RISK). "
-            f"The observed repeat count of {repeats} is well within the healthy population reference boundary (normal threshold is at or below {thresh['normal_max']} repeats). "
-            f"This sequence demonstrates stable genomic transmission without risk of abnormal polyglutamine expansion or phenotypic disease manifestation. "
-            f"The machine learning classification confirms a status of '{predicted_label}' with {confidence:.1f}% confidence. "
-            f"No follow-up genetic intervention for {condition_display} is indicated."
-        )
-
-    return f"{p1}\n\n{p2}\n\n{p3}"
 
 
 def render_auth():
@@ -263,6 +233,7 @@ def render_dashboard():
 
         sequence = ""
         sample_name = ""
+        should_run = False
 
         if input_type == "NCBI GenBank Clones":
             fasta_files = [f for f in os.listdir(DATA_DIR) if f.endswith(".fasta")]
@@ -273,6 +244,8 @@ def render_dashboard():
                 sample_name = selected_file
                 header, sequence = read_fasta(os.path.join(DATA_DIR, selected_file))
                 st.caption(f"Sequence ID: `{header[:85]}`")
+                if st.button("Run Diagnostic Analysis", type="primary", use_container_width=True):
+                    should_run = True
 
         elif input_type == "Upload FASTA File":
             up = st.file_uploader("Upload .fasta or .fa file", type=["fasta", "fa"])
@@ -281,100 +254,125 @@ def render_dashboard():
                 header = lines[0][1:] if lines[0].startswith(">") else "Custom Upload"
                 sequence = "".join([l.strip().upper() for l in lines if not l.startswith(">")])
                 sample_name = up.name
+                if st.button("Run Diagnostic Analysis", type="primary", use_container_width=True):
+                    should_run = True
 
         else:
-            raw_seq = st.text_area("Paste DNA Sequence (A, C, G, T)", height=100)
-            if raw_seq:
-                sequence = "".join(raw_seq.split()).upper()
-                sample_name = "Pasted Nucleotides"
+            # Explicit Form for Pasting DNA String to provide an immediate Run button without Ctrl+Enter
+            with st.form("paste_dna_form"):
+                raw_seq = st.text_area("Paste DNA Sequence (A, C, G, T)", height=140, placeholder="ATGGCGACCCTGGAAAAGTCCTTCCAGCAGCAGCAGCAGCAGCAG...")
+                run_pasted = st.form_submit_button("Run Diagnostic Analysis", type="primary", use_container_width=True)
 
-        # Action: Analyze Sequence
-        if sequence:
-            st.write(f"Loaded Sequence: **{sample_name}** ({len(sequence):,} base pairs)")
-            if st.button("Run Diagnostic Analysis", type="primary", use_container_width=True):
-                with st.spinner("Analyzing sequence..."):
-                    motif = d_info["motif"]
-                    gene = d_info["gene"]
-                    thresh = d_info["clinical_thresholds"]
-
-                    # 1. Feature Extraction via Z-Algorithm
-                    feats = extract_z_features(sequence, motif, gene)
-                    repeats = feats["max_consecutive_repeats"]
-
-                    # 2. Machine Learning Classifier
-                    clf = load_classifier()
-                    df_feat = pd.DataFrame([feats])[FEATURE_COLUMNS]
-                    pred_class = clf.predict(df_feat)[0]
-                    pred_probs = clf.predict_proba(df_feat)[0]
-
-                    labels = ["Normal (Healthy)", "Carrier (Intermediate)", "Reduced Penetrance", "Pathogenic (Full Penetrance)"]
-                    predicted_label = labels[pred_class]
-                    confidence = pred_probs[pred_class] * 100.0
-
-                    # 3. Clinical Status
-                    if repeats >= thresh["pathogenic_min"]:
-                        clinical_status = "PATHOGENIC / FULL PENETRANCE"
-                        risk_level = "High"
-                        box_class = "status-box-pathogenic"
-                    elif repeats > thresh["normal_max"]:
-                        clinical_status = "INTERMEDIATE / CARRIER"
-                        risk_level = "Moderate"
-                        box_class = "status-box-carrier"
+                if run_pasted:
+                    if raw_seq and raw_seq.strip():
+                        sequence = "".join(raw_seq.split()).upper()
+                        sample_name = "Pasted Nucleotides"
+                        should_run = True
                     else:
-                        clinical_status = "NORMAL (WITHIN REFERENCE LIMITS)"
-                        risk_level = "Low"
-                        box_class = "status-box-normal"
+                        st.warning("Please paste a DNA nucleotide string to analyze.")
 
-                    # 4. Save to DB
-                    record_user_analysis(user["id"], {
-                        "sample_name": sample_name,
-                        "disease": selected_disease,
-                        "target_motif": motif,
-                        "seq_length": len(sequence),
-                        "max_repeats": repeats,
-                        "total_matches": feats["total_motif_occurrences"],
-                        "z_comparisons": feats["z_comparisons"],
-                        "comparisons_saved": feats["comparisons_saved"],
-                        "prediction_label": predicted_label,
-                        "risk_level": risk_level,
-                        "confidence_pct": round(confidence, 2)
-                    })
+        # Execute Diagnostic Evaluation
+        if should_run and sequence:
+            with st.spinner("Executing sequence verification..."):
+                motif = d_info["motif"]
+                gene = d_info["gene"]
+                thresh = d_info["clinical_thresholds"]
 
-                    # Generate Full Textual Report in Words
-                    textual_report = generate_textual_report(
-                        sample_name=sample_name,
-                        disease_name=selected_disease,
-                        gene=gene,
-                        motif=motif,
-                        repeats=repeats,
-                        locus_start=feats['locus_start'],
-                        locus_end=feats['locus_end'],
-                        total_matches=feats['total_motif_occurrences'],
-                        seq_len=len(sequence),
-                        predicted_label=predicted_label,
-                        confidence=confidence,
-                        clinical_status=clinical_status,
-                        risk_level=risk_level,
-                        thresh=thresh
-                    )
+                # 1. Feature Extraction via Z-Algorithm
+                feats = extract_z_features(sequence, motif, gene)
+                repeats = feats["max_consecutive_repeats"]
 
-                    # Diagnostic Report Display in Full Words
-                    st.markdown(f"""
-                    <div class="{box_class}">
-                        <div style="font-size: 0.85rem; font-weight: 700; text-transform: uppercase;">Diagnostic Assessment</div>
-                        <div style="font-size: 1.4rem; font-weight: 700; margin: 6px 0;">{clinical_status} [{risk_level.upper()} RISK]</div>
-                        <div class="report-paragraph">
-                            {textual_report.replace(chr(10) + chr(10), '<br><br>')}
-                        </div>
+                # 2. Machine Learning Classifier
+                clf = load_classifier()
+                df_feat = pd.DataFrame([feats])[FEATURE_COLUMNS]
+                pred_class = clf.predict(df_feat)[0]
+                pred_probs = clf.predict_proba(df_feat)[0]
+
+                labels = ["Normal (Healthy)", "Carrier (Intermediate)", "Reduced Penetrance", "Pathogenic (Full Penetrance)"]
+                predicted_label = labels[pred_class]
+                confidence = pred_probs[pred_class] * 100.0
+
+                # 3. Clinical Status & Badge
+                if repeats >= thresh["pathogenic_min"]:
+                    clinical_status = "PATHOGENIC / FULL PENETRANCE"
+                    risk_level = "High Risk"
+                    badge_class = "badge-pathogenic"
+                    recommendation = "Positive for pathological expansion. Referral to specialized neurogenetics clinic and supportive multidisciplinary care advised."
+                elif repeats > thresh["normal_max"]:
+                    clinical_status = "INTERMEDIATE / CARRIER PREMUTATION"
+                    risk_level = "Moderate Risk"
+                    badge_class = "badge-carrier"
+                    recommendation = "Intermediate allele detected. Patient is asymptomatic; genetic counseling recommended for reproductive and transmission risk to offspring."
+                else:
+                    clinical_status = "NORMAL / WITHIN REFERENCE LIMITS"
+                    risk_level = "Low Risk"
+                    badge_class = "badge-normal"
+                    recommendation = "Normal stable allele. No pathological expansion detected; no medical follow-up indicated."
+
+                # 4. Save to DB
+                record_user_analysis(user["id"], {
+                    "sample_name": sample_name,
+                    "disease": selected_disease,
+                    "target_motif": motif,
+                    "seq_length": len(sequence),
+                    "max_repeats": repeats,
+                    "total_matches": feats["total_motif_occurrences"],
+                    "z_comparisons": feats["z_comparisons"],
+                    "comparisons_saved": feats["comparisons_saved"],
+                    "prediction_label": predicted_label,
+                    "risk_level": risk_level,
+                    "confidence_pct": round(confidence, 2)
+                })
+
+                now_date = datetime.now().strftime("%B %d, %Y - %H:%M")
+
+                # STANDARD STRUCTURED CLINICAL REPORT
+                st.markdown(f"""
+                <div class="clinical-report-card">
+                    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(128,128,128,0.2); padding-bottom:8px; margin-bottom:14px;">
+                        <span style="font-weight:700; font-size:1.1rem; text-transform:uppercase; letter-spacing:0.04em;">Molecular Genetics Pathology Report</span>
+                        <span style="color:#64748b; font-size:0.85rem;">Date: {now_date}</span>
                     </div>
-                    """, unsafe_allow_html=True)
 
-                    # Simple Summary Metrics
-                    c1, c2, c3, c4 = st.columns(4)
-                    c1.metric("Sequence Length", f"{len(sequence):,} bp")
-                    c2.metric("Max Repeat Length", f"{repeats} repeats")
-                    c3.metric(f"Total '{motif}' Hits", f"{feats['total_motif_occurrences']}")
-                    c4.metric("Model Confidence", f"{confidence:.1f}%")
+                    <table class="report-table">
+                        <tr>
+                            <td class="field-label">Specimen Identifier</td>
+                            <td class="field-value"><code>{sample_name}</code> ({len(sequence):,} base pairs)</td>
+                        </tr>
+                        <tr>
+                            <td class="field-label">Condition & Gene Panel</td>
+                            <td class="field-value">{selected_disease.replace('_', ' ')} (<code>{gene}</code> Gene - Chromosome {d_info['chromosome']})</td>
+                        </tr>
+                        <tr>
+                            <td class="field-label">Target Nucleotide Motif</td>
+                            <td class="field-value"><code>5'-{motif}-3'</code> ({feats['total_motif_occurrences']} total matches identified)</td>
+                        </tr>
+                        <tr>
+                            <td class="field-label">Identified Repeat Tract</td>
+                            <td class="field-value"><b>{repeats} Consecutive Repeats</b> (Locus: nucleotide {feats['locus_start']} to {feats['locus_end']})</td>
+                        </tr>
+                        <tr>
+                            <td class="field-label">Diagnostic Finding</td>
+                            <td class="field-value"><span class="{badge_class}">{clinical_status}</span> &nbsp;({risk_level})</td>
+                        </tr>
+                        <tr>
+                            <td class="field-label">Machine Learning Classification</td>
+                            <td class="field-value">{predicted_label} (Confidence: <b>{confidence:.1f}%</b>)</td>
+                        </tr>
+                        <tr>
+                            <td class="field-label">Clinical Action / Recommendation</td>
+                            <td class="field-value">{recommendation}</td>
+                        </tr>
+                    </table>
+                </div>
+                """, unsafe_allow_html=True)
+
+                # Summary Counters
+                c1, c2, c3, c4 = st.columns(4)
+                c1.metric("Sequence Length", f"{len(sequence):,} bp")
+                c2.metric("Max Repeat Count", f"{repeats} repeats")
+                c3.metric(f"Total '{motif}' Matches", f"{feats['total_motif_occurrences']}")
+                c4.metric("Model Confidence", f"{confidence:.1f}%")
 
     # TAB 2: HISTORY
     with tab_history:
@@ -396,7 +394,8 @@ def render_dashboard():
             # Repeat Count Chart
             fig_hist = px.bar(
                 df_h, x="sample_name", y="max_repeats", color="risk_level",
-                color_discrete_map={"Low": "#10b981", "Moderate": "#f59e0b", "High": "#ef4444"},
+                color_discrete_map={"Low Risk": "#10b981", "Moderate Risk": "#f59e0b", "High Risk": "#ef4444",
+                                    "Low": "#10b981", "Moderate": "#f59e0b", "High": "#ef4444"},
                 labels={"sample_name": "Sample", "max_repeats": "Consecutive Repeats"}
             )
             fig_hist.update_layout(height=280, margin=dict(l=10, r=10, t=10, b=10))
