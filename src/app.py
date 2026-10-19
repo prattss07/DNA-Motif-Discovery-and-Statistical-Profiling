@@ -1,16 +1,15 @@
 """
 DNA Motif Discovery & Clinical Diagnostic Suite
-Clean, modern, emoji-free user interface focused on seamless diagnostic prediction.
+Clean, simple user interface with detailed textual diagnostic findings
+and local / custom sequence inputs.
 """
 
 import os
 import sys
 import pickle
-import urllib.request
 import json
 import pandas as pd
 import plotly.express as px
-import plotly.graph_objects as go
 import streamlit as st
 
 # Setup Paths
@@ -35,25 +34,13 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Clean, Modern, Native Dark/Light Adaptive CSS (No hardcoded whites that cause blank blocks)
+# Clean, Theme-Adaptive CSS
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
     html, body, [class*="css"] {
         font-family: 'Inter', sans-serif;
-    }
-
-    code, pre {
-        font-family: 'JetBrains Mono', monospace !important;
-    }
-
-    /* Clean Card Container */
-    .clean-card {
-        border: 1px solid rgba(128, 128, 128, 0.2);
-        border-radius: 12px;
-        padding: 24px 28px;
-        margin-bottom: 20px;
     }
 
     /* Diagnosis Status Banners */
@@ -61,25 +48,31 @@ st.markdown("""
         border-left: 5px solid #10b981;
         background-color: rgba(16, 185, 129, 0.08);
         border-radius: 8px;
-        padding: 16px 20px;
-        margin: 16px 0;
+        padding: 20px 24px;
+        margin: 20px 0;
     }
     .status-box-carrier {
         border-left: 5px solid #f59e0b;
         background-color: rgba(245, 158, 11, 0.08);
         border-radius: 8px;
-        padding: 16px 20px;
-        margin: 16px 0;
+        padding: 20px 24px;
+        margin: 20px 0;
     }
     .status-box-pathogenic {
         border-left: 5px solid #ef4444;
         background-color: rgba(239, 68, 68, 0.08);
         border-radius: 8px;
-        padding: 16px 20px;
-        margin: 16px 0;
+        padding: 20px 24px;
+        margin: 20px 0;
     }
 
-    /* Simple Tab styling */
+    .report-paragraph {
+        font-size: 1.05rem;
+        line-height: 1.7;
+        margin-top: 12px;
+    }
+
+    /* Tab styling */
     .stTabs [data-baseweb="tab-list"] {
         gap: 24px;
         border-bottom: 1px solid rgba(128, 128, 128, 0.2);
@@ -105,6 +98,60 @@ def load_classifier():
         train_models()
     with open(model_path, "rb") as f:
         return pickle.load(f)
+
+
+def generate_textual_report(sample_name: str, disease_name: str, gene: str, motif: str,
+                            repeats: int, locus_start: int, locus_end: int,
+                            total_matches: int, seq_len: int,
+                            predicted_label: str, confidence: float,
+                            clinical_status: str, risk_level: str,
+                            thresh: dict) -> str:
+    """Generates an authentic, fully written diagnostic report in continuous natural English words."""
+
+    condition_display = disease_name.replace("_", " ")
+
+    # Section 1: Overview
+    p1 = (
+        f"A molecular screening of specimen '{sample_name}' (spanning a total analyzed length of {seq_len:,} base pairs) "
+        f"was conducted for {condition_display} targeting the {gene} gene on the human chromosome. "
+        f"The diagnostic assay evaluated the presence, positioning, and tandem expansion of the critical '{motif}' nucleotide motif."
+    )
+
+    # Section 2: Exact Findings
+    p2 = (
+        f"Upon sequence scanning, a total of {total_matches} occurrences of the '{motif}' pattern were verified across the DNA strand. "
+        f"The primary polymorphic locus of interest was identified beginning at nucleotide index {locus_start} and concluding at index {locus_end}. "
+        f"Within this specific segment, the patient's sequence demonstrated an unbroken consecutive repeat tract measuring {repeats} tandem '{motif}' units."
+    )
+
+    # Section 3: Clinical Diagnostic Interpretation
+    if "PATHOGENIC" in clinical_status:
+        p3 = (
+            f"CLINICAL FINDING: POSITIVE FOR PATHOGENIC REPEAT EXPANSION ({risk_level.upper()} RISK). "
+            f"The observed tract of {repeats} repeats significantly exceeds the clinical threshold of {thresh['pathogenic_min']} repeats established by standard medical genetics guidelines. "
+            f"Alleles of this size demonstrate full genetic penetrance, indicating that the patient is genetically positive and affected by {condition_display}. "
+            f"The computational machine learning model corroborates this diagnosis with a classification of '{predicted_label}' at {confidence:.1f}% confidence. "
+            f"Medical referral to a neurogenetics specialist and multidisciplinary care is advised."
+        )
+    elif "CARRIER" in clinical_status or "INTERMEDIATE" in clinical_status:
+        p3 = (
+            f"CLINICAL FINDING: INTERMEDIATE / PRE-MUTATION CARRIER STATE ({risk_level.upper()} RISK). "
+            f"The detected count of {repeats} repeats lies within the intermediate range (between {thresh['normal_max'] + 1} and {thresh['intermediate_max']} repeats). "
+            f"Individuals harboring alleles in this range do not manifest clinical symptoms of {condition_display}. "
+            f"However, this sequence possesses meiotic instability and may undergo further repeat expansion during transmission to biological offspring. "
+            f"The machine learning system classifies this sample as '{predicted_label}' ({confidence:.1f}% confidence). "
+            f"Genetic counseling regarding reproductive risk is recommended."
+        )
+    else:
+        p3 = (
+            f"CLINICAL FINDING: NEGATIVE / NORMAL REFERENCE RANGE ({risk_level.upper()} RISK). "
+            f"The observed repeat count of {repeats} is well within the healthy population reference boundary (normal threshold is at or below {thresh['normal_max']} repeats). "
+            f"This sequence demonstrates stable genomic transmission without risk of abnormal polyglutamine expansion or phenotypic disease manifestation. "
+            f"The machine learning classification confirms a status of '{predicted_label}' with {confidence:.1f}% confidence. "
+            f"No follow-up genetic intervention for {condition_display} is indicated."
+        )
+
+    return f"{p1}\n\n{p2}\n\n{p3}"
 
 
 def render_auth():
@@ -210,7 +257,7 @@ def render_dashboard():
     with tab_scan:
         input_type = st.radio(
             "Sequence Input Method:",
-            ["NCBI GenBank Clones", "Query Live Accession (NCBI)", "Upload FASTA File", "Paste DNA String"],
+            ["NCBI GenBank Clones", "Upload FASTA File", "Paste DNA String"],
             horizontal=True
         )
 
@@ -226,31 +273,6 @@ def render_dashboard():
                 sample_name = selected_file
                 header, sequence = read_fasta(os.path.join(DATA_DIR, selected_file))
                 st.caption(f"Sequence ID: `{header[:85]}`")
-
-        elif input_type == "Query Live Accession (NCBI)":
-            col_acc, col_btn = st.columns([3, 1])
-            with col_acc:
-                acc = st.text_input("Enter NCBI Accession Number", value=d_info["ncbi_accessions"][0])
-            with col_btn:
-                st.write("")
-                st.write("")
-                fetch = st.button("Fetch Sequence", use_container_width=True)
-
-            if fetch and acc:
-                with st.spinner("Connecting to NCBI GenBank..."):
-                    try:
-                        url = f"https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id={acc.strip()}&rettype=fasta&retmode=text"
-                        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-                        with urllib.request.urlopen(req) as resp:
-                            fasta_raw = resp.read().decode('utf-8')
-                        save_p = os.path.join(DATA_DIR, f"{acc.strip()}.fasta")
-                        with open(save_p, "w", encoding="utf-8") as f:
-                            f.write(fasta_raw)
-                        header, sequence = read_fasta(save_p)
-                        sample_name = f"NCBI Accession {acc.strip()}"
-                        st.success(f"Downloaded {len(sequence):,} base pairs from NCBI.")
-                    except Exception as e:
-                        st.error(f"Error fetching from NCBI: {e}")
 
         elif input_type == "Upload FASTA File":
             up = st.file_uploader("Upload .fasta or .fa file", type=["fasta", "fa"])
@@ -318,32 +340,41 @@ def render_dashboard():
                         "confidence_pct": round(confidence, 2)
                     })
 
-                    # Status Banner
+                    # Generate Full Textual Report in Words
+                    textual_report = generate_textual_report(
+                        sample_name=sample_name,
+                        disease_name=selected_disease,
+                        gene=gene,
+                        motif=motif,
+                        repeats=repeats,
+                        locus_start=feats['locus_start'],
+                        locus_end=feats['locus_end'],
+                        total_matches=feats['total_motif_occurrences'],
+                        seq_len=len(sequence),
+                        predicted_label=predicted_label,
+                        confidence=confidence,
+                        clinical_status=clinical_status,
+                        risk_level=risk_level,
+                        thresh=thresh
+                    )
+
+                    # Diagnostic Report Display in Full Words
                     st.markdown(f"""
                     <div class="{box_class}">
-                        <div style="font-size: 0.8rem; font-weight: 600; text-transform: uppercase;">Diagnostic Result</div>
-                        <div style="font-size: 1.4rem; font-weight: 700; margin: 4px 0;">{clinical_status} [{risk_level.upper()} RISK]</div>
-                        <div>Found <b>{repeats} consecutive '{motif}' repeats</b> (Coordinates: {feats['locus_start']}:{feats['locus_end']}). Predicted: <b>{predicted_label}</b> ({confidence:.1f}% confidence).</div>
+                        <div style="font-size: 0.85rem; font-weight: 700; text-transform: uppercase;">Diagnostic Assessment</div>
+                        <div style="font-size: 1.4rem; font-weight: 700; margin: 6px 0;">{clinical_status} [{risk_level.upper()} RISK]</div>
+                        <div class="report-paragraph">
+                            {textual_report.replace(chr(10) + chr(10), '<br><br>')}
+                        </div>
                     </div>
                     """, unsafe_allow_html=True)
 
-                    # Simple Metrics
+                    # Simple Summary Metrics
                     c1, c2, c3, c4 = st.columns(4)
                     c1.metric("Sequence Length", f"{len(sequence):,} bp")
                     c2.metric("Max Repeat Length", f"{repeats} repeats")
                     c3.metric(f"Total '{motif}' Hits", f"{feats['total_motif_occurrences']}")
                     c4.metric("Model Confidence", f"{confidence:.1f}%")
-
-                    # Class Probabilities Bar Chart
-                    st.subheader("Prediction Confidence")
-                    df_p = pd.DataFrame({"Class": labels, "Probability": pred_probs * 100.0})
-                    fig_p = px.bar(
-                        df_p, x="Probability", y="Class", orientation='h',
-                        text="Probability", range_x=[0, 100]
-                    )
-                    fig_p.update_traces(texttemplate='%{text:.1f}%', textposition='outside')
-                    fig_p.update_layout(height=240, margin=dict(l=10, r=10, t=10, b=10))
-                    st.plotly_chart(fig_p, use_container_width=True)
 
     # TAB 2: HISTORY
     with tab_history:
