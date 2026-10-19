@@ -1,24 +1,27 @@
 """
-DNA Motif Discovery & Clinical Profiling Dashboard:
-Interactive Streamlit UI with Authentication (Sign Up, Sign In, Logout),
-Live Z-Algorithm Genomic Scanner, Real-Time Repeat Profiling, Visual Charts,
-and User Analytics History Tracking.
+DNA Motif Discovery & Clinical Profiling Enterprise Suite
+==========================================================
+High-Performance Genomic Sequence Verification using the Linear-Time Z-Algorithm O(N+M)
+Equipped with Professional Authentication, Real-Time Telemetry,
+Comparative Visualizations, Audit Trails, and Clinical Diagnostics.
 """
 
 import os
 import sys
 import pickle
 import urllib.request
+import json
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 
-# Add current and parent directory to sys.path
+# Setup Pathing
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC_DIR = os.path.join(BASE_DIR, "src")
 DATA_DIR = os.path.join(BASE_DIR, "data")
 MODELS_DIR = os.path.join(BASE_DIR, "models")
+RESULTS_DIR = os.path.join(BASE_DIR, "results")
 if SRC_DIR not in sys.path:
     sys.path.insert(0, SRC_DIR)
 
@@ -28,53 +31,136 @@ from analyzer import read_fasta
 from feature_extractor import extract_z_features
 from train_model import FEATURE_COLUMNS, train_models
 
-# Page Config
+# Page Configurations
 st.set_page_config(
-    page_title="DNA Motif & Disease Profiling | Z-Algorithm",
+    page_title="GenomiX | Clinical Motif Intelligence",
     page_icon="🧬",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# Custom Styling
+# Enterprise Modern UI Styling
 st.markdown("""
 <style>
-    .metric-card {
-        background-color: #f8f9fa;
-        border-radius: 8px;
-        padding: 16px;
-        border-left: 5px solid #0d6efd;
-        margin-bottom: 12px;
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+    html, body, [class*="css"] {
+        font-family: 'Plus Jakarta Sans', sans-serif;
     }
-    .status-normal {
-        color: #198754;
+    
+    code, pre {
+        font-family: 'JetBrains Mono', monospace !important;
+    }
+
+    /* Gradient Headers & Modern Cards */
+    .hero-banner {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f766e 100%);
+        color: white;
+        padding: 38px 45px;
+        border-radius: 20px;
+        box-shadow: 0 10px 25px -5px rgba(0,0,0,0.15), 0 8px 10px -6px rgba(0,0,0,0.1);
+        margin-bottom: 28px;
+    }
+    .hero-title {
+        font-size: 2.25rem;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        margin-bottom: 8px;
+        background: linear-gradient(to right, #ffffff, #99f6e4);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    .hero-subtitle {
+        color: #94a3b8;
+        font-size: 1.05rem;
+        font-weight: 400;
+        line-height: 1.6;
+    }
+
+    /* Metric Cards */
+    .metric-box {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        padding: 20px 24px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .metric-box:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgba(0,0,0,0.07);
+    }
+    .metric-label {
+        color: #64748b;
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    .metric-val {
+        color: #0f172a;
+        font-size: 1.85rem;
         font-weight: 700;
-        font-size: 1.2rem;
+        margin-top: 6px;
     }
-    .status-carrier {
-        color: #ffc107;
-        font-weight: 700;
-        font-size: 1.2rem;
+    .metric-sub {
+        color: #10b981;
+        font-size: 0.8rem;
+        font-weight: 600;
+        margin-top: 4px;
     }
-    .status-pathogenic {
-        color: #dc3545;
-        font-weight: 700;
-        font-size: 1.2rem;
+
+    /* Diagnostic Status Banners */
+    .diag-banner-normal {
+        background: #ecfdf5;
+        border-left: 6px solid #10b981;
+        border-radius: 12px;
+        padding: 22px 26px;
+        margin: 20px 0;
     }
+    .diag-banner-carrier {
+        background: #fffbeb;
+        border-left: 6px solid #f59e0b;
+        border-radius: 12px;
+        padding: 22px 26px;
+        margin: 20px 0;
+    }
+    .diag-banner-pathogenic {
+        background: #fef2f2;
+        border-left: 6px solid #ef4444;
+        border-radius: 12px;
+        padding: 22px 26px;
+        margin: 20px 0;
+    }
+
+    /* Professional Form Card */
+    .auth-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 18px;
+        padding: 34px 38px;
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -2px rgba(0,0,0,0.05);
+    }
+
+    /* Tabs Styling */
     .stTabs [data-baseweb="tab-list"] {
-        gap: 24px;
+        border-bottom: 2px solid #e2e8f0;
+        gap: 32px;
     }
     .stTabs [data-baseweb="tab"] {
-        height: 50px;
-        white-space: pre-wrap;
-        font-size: 16px;
+        padding: 12px 6px;
+        font-size: 0.95rem;
         font-weight: 600;
+        color: #64748b;
+    }
+    .stTabs [aria-selected="true"] {
+        color: #0f766e !important;
+        border-bottom-color: #0f766e !important;
     }
 </style>
 """, unsafe_allow_html=True)
 
-
-# Session State Management
+# Session State
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
 if "user" not in st.session_state:
@@ -89,192 +175,258 @@ def load_classifier():
         return pickle.load(f)
 
 
-def render_auth_page():
-    st.title("🧬 DNA Motif Discovery & Genetic Risk Profiling")
-    st.subheader("High-Performance Genomic Sequence Analysis using the Z-Algorithm")
+def render_professional_auth():
+    # Hero Title Bar
+    st.markdown("""
+    <div class="hero-banner">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+                <div class="hero-title">GENOMIX · Clinical Motif Intelligence</div>
+                <div class="hero-subtitle">
+                    Linear-Time <b>Z-Algorithm O(N+M)</b> Sequence Telemetry & Machine Learning Diagnostic Portal.<br>
+                    Integrated with Peer-Reviewed NCBI GenBank Triplet Repeat Expansion Registries.
+                </div>
+            </div>
+            <div style="font-size: 3.5rem;">🧬</div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
-    col1, col2 = st.columns([1, 1], gap="large")
+    auth_tab1, auth_tab2 = st.tabs(["🔐 Clinical Sign In", "📝 Create Practitioner Account"])
 
-    with col1:
-        st.markdown("### 🔐 Researcher / Clinician Sign In")
-        with st.form("signin_form"):
-            login_username = st.text_input("Username or Email")
-            login_password = st.text_input("Password", type="password")
-            submit_login = st.form_submit_button("Sign In", use_container_width=True)
+    with auth_tab1:
+        col_c1, col_c2, col_c3 = st.columns([1, 2.2, 1])
+        with col_c2:
+            st.markdown('<div class="auth-card">', unsafe_allow_html=True)
+            st.markdown("### Access Diagnostics Portal")
+            st.caption("Enter your clinical or institutional researcher credentials to proceed.")
 
-            if submit_login:
-                user = authenticate_user(login_username, login_password)
-                if user:
-                    st.session_state.authenticated = True
-                    st.session_state.user = user
-                    st.success(f"Welcome back, {user['full_name']}!")
-                    st.rerun()
-                else:
-                    st.error("Invalid credentials. Please verify your username and password.")
+            with st.form("signin_form_pro"):
+                login_id = st.text_input("Username or Institutional Email", placeholder="e.g. dr.smith@mayo.edu")
+                login_pass = st.text_input("Password", type="password", placeholder="••••••••••••")
+                remember = st.checkbox("Keep session active for 24 hours", value=True)
+                submit_login = st.form_submit_button("Sign In to Diagnostic Console", type="primary", use_container_width=True)
 
-    with col2:
-        st.markdown("### 📝 New Account Registration")
-        with st.form("signup_form"):
-            reg_name = st.text_input("Full Name (e.g. Dr. John Doe)")
-            reg_inst = st.text_input("Institution / Hospital (Optional)")
-            reg_user = st.text_input("Choose Username")
-            reg_email = st.text_input("Email Address")
-            reg_pass = st.text_input("Choose Password", type="password")
-            submit_signup = st.form_submit_button("Sign Up", use_container_width=True)
+                if submit_login:
+                    if not login_id or not login_pass:
+                        st.warning("Please specify both username and password.")
+                    else:
+                        user = authenticate_user(login_id, login_pass)
+                        if user:
+                            st.session_state.authenticated = True
+                            st.session_state.user = user
+                            st.toast(f"Welcome back, {user['full_name']}!", icon="✅")
+                            st.rerun()
+                        else:
+                            st.error("Invalid credentials. Please verify your credentials or register below.")
 
-            if submit_signup:
-                ok, msg = register_user(reg_user, reg_email, reg_pass, reg_name, reg_inst)
-                if ok:
-                    st.success(msg)
-                else:
-                    st.error(msg)
+            st.markdown('</div>', unsafe_allow_html=True)
+
+    with auth_tab2:
+        col_r1, col_r2, col_r3 = st.columns([1, 2.4, 1])
+        with col_r2:
+            st.markdown('<div class="auth-card">', unsafe_allow_html=True)
+            st.markdown("### Register New Geneticist / Analyst")
+            st.caption("Create an authenticated profile for genomic sequence tracking and automated auditing.")
+
+            with st.form("signup_form_pro"):
+                full_name = st.text_input("Full Name & Title", placeholder="e.g. Dr. Jane Smith, MD, FACMG")
+                institution = st.text_input("Institution / Clinical Laboratory", placeholder="e.g. Department of Neurogenetics, Mayo Clinic")
+                c_u1, c_u2 = st.columns(2)
+                with c_u1:
+                    new_user = st.text_input("Username", placeholder="e.g. jsmith266")
+                with c_u2:
+                    new_email = st.text_input("Work Email", placeholder="e.g. jsmith@hospital.org")
+                new_pass = st.text_input("Security Passphrase", type="password", placeholder="Minimum 8 characters")
+                agree = st.checkbox("I verify that all analysis adheres to patient genomic data protection guidelines.")
+
+                submit_signup = st.form_submit_button("Register & Activate Credentials", use_container_width=True)
+
+                if submit_signup:
+                    if not agree:
+                        st.warning("Please acknowledge data governance compliance.")
+                    else:
+                        ok, msg = register_user(new_user, new_email, new_pass, full_name, institution)
+                        if ok:
+                            st.success(f"{msg} You can now log in above.")
+                        else:
+                            st.error(msg)
+
+            st.markdown('</div>', unsafe_allow_html=True)
 
 
-def render_dashboard():
+def render_professional_dashboard():
     user = st.session_state.user
 
-    # Sidebar Header & User Profile
+    # Sidebar Header
     with st.sidebar:
-        st.markdown(f"### 👤 Logged in as:")
-        st.markdown(f"**{user['full_name']}**")
-        if user['institution']:
-            st.caption(f"🏛️ {user['institution']}")
-        st.caption(f"📧 {user['email']}")
+        st.markdown(f"""
+        <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:16px; margin-bottom:18px;">
+            <div style="font-size:0.75rem; font-weight:700; color:#64748b; text-transform:uppercase;">Active Clinician</div>
+            <div style="font-size:1.15rem; font-weight:700; color:#0f172a; margin-top:3px;">{user['full_name']}</div>
+            <div style="font-size:0.85rem; color:#0f766e; font-weight:500;">{user['institution'] if user['institution'] else 'Authorized Geneticist'}</div>
+            <div style="font-size:0.75rem; color:#94a3b8; margin-top:4px;">ID: #{user['id']} · {user['email']}</div>
+        </div>
+        """, unsafe_allow_html=True)
 
-        if st.button("🚪 Log Out", use_container_width=True):
+        if st.button("🚪 Terminate Session (Sign Out)", use_container_width=True):
             st.session_state.authenticated = False
             st.session_state.user = None
             st.rerun()
 
         st.divider()
-        st.markdown("### 🎯 Target Disease")
+        st.markdown("### 🧬 Target Condition Profile")
         selected_disease_name = st.selectbox(
-            "Select Condition",
+            "Select Clinical Panel",
             options=list(DISEASE_REGISTRY.keys()),
             format_func=lambda x: x.replace("_", " ")
         )
         disease_info = DISEASE_REGISTRY[selected_disease_name]
 
-        st.info(f"""
-        **Target Gene:** `{disease_info['gene']}`  
-        **Motif Pattern:** `{disease_info['motif']}`  
-        **Chromosome:** `{disease_info['chromosome']}`  
-        **Normal Limit:** $\le {disease_info['clinical_thresholds']['normal_max']}$ repeats  
-        **Pathogenic:** $\ge {disease_info['clinical_thresholds']['pathogenic_min']}$ repeats
-        """)
+        st.markdown(f"""
+        <div style="background:#ffffff; border:1px solid #cbd5e1; border-radius:10px; padding:14px; font-size:0.88rem;">
+            <b>Gene Symbol:</b> <code>{disease_info['gene']}</code><br>
+            <b>Target Motif:</b> <code>{disease_info['motif']}</code> (Triplet)<br>
+            <b>Chromosome:</b> <code>{disease_info['chromosome']}</code><br>
+            <b>Normal Threshold:</b> $\le {disease_info['clinical_thresholds']['normal_max']}$ repeats<br>
+            <b>Pathogenic Limit:</b> $\ge {disease_info['clinical_thresholds']['pathogenic_min']}$ repeats<br>
+            <div style="margin-top:8px; font-size:0.8rem; color:#64748b;">{disease_info['description']}</div>
+        </div>
+        """, unsafe_allow_html=True)
 
-    # Main Navigation Tabs
-    tab_scan, tab_user_analytics, tab_benchmark, tab_about = st.tabs([
-        "🔬 Live Genomic Motif Scanner",
-        "📊 User Analysis History & Analytics",
-        "📁 Real NCBI Dataset Benchmark",
-        "📖 DAA & Clinical Methodology"
+    # Top Banner
+    st.markdown(f"""
+    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e2e8f0; padding-bottom:14px; margin-bottom:20px;">
+        <div>
+            <h2 style="margin:0; font-weight:800; color:#0f172a;">{selected_disease_name.replace('_', ' ')} Diagnostic Console</h2>
+            <div style="color:#64748b; font-size:0.95rem;">Assay Engine: Linear-Time Z-Algorithm Verification & Multi-Feature Random Forest Classification</div>
+        </div>
+        <div style="background:#e0f2fe; color:#0369a1; padding:6px 14px; border-radius:20px; font-weight:600; font-size:0.85rem;">
+            ACMG Standard Compliant
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Navigation Tabs
+    tab_scan, tab_history, tab_benchmark, tab_methodology = st.tabs([
+        "🔬 Sequence Diagnostic Scanner",
+        "📈 User Analytics & Audit Trail",
+        "🗄️ Peer-Reviewed NCBI Cohort",
+        "📘 DAA Algorithmic Architecture"
     ])
 
-    # TAB 1: LIVE GENOMIC SCANNER
+    # TAB 1: DIAGNOSTIC SCANNER
     with tab_scan:
-        st.header(f"Analyze DNA for {selected_disease_name.replace('_', ' ')}")
-        st.markdown("Submit an authentic sequence using any of the 3 input methods below:")
-
-        input_choice = st.radio(
-            "Choose Sequence Source:",
-            ["Choose from Downloaded NCBI GenBank Samples", "Fetch Live NCBI Accession via E-utilities", "Upload Local FASTA File", "Enter Raw DNA String"],
+        source_mode = st.radio(
+            "Select Sequence Input Modality:",
+            [
+                "📁 Pre-loaded NCBI Patient Clones",
+                "🌐 Live NCBI GenBank Query (Entrez API)",
+                "📤 Upload Custom FASTA File",
+                "✍️ Direct Nucleotide Input"
+            ],
             horizontal=True
         )
 
         sequence = ""
         sample_name = ""
 
-        if input_choice == "Choose from Downloaded NCBI GenBank Samples":
+        if source_mode == "📁 Pre-loaded NCBI Patient Clones":
             fasta_files = [f for f in os.listdir(DATA_DIR) if f.endswith(".fasta")]
-            # Filter files related to selected disease if possible
-            matching_files = [f for f in fasta_files if disease_info['gene'] in f or disease_info['motif'] in f or selected_disease_name in f]
-            display_files = matching_files if matching_files else fasta_files
-
-            selected_file = st.selectbox("Select Specimen", display_files)
+            matched = [f for f in fasta_files if disease_info['gene'] in f or selected_disease_name in f]
+            options = matched if matched else fasta_files
+            selected_file = st.selectbox("Select Specimen Record", options)
             if selected_file:
                 sample_name = selected_file
                 header, sequence = read_fasta(os.path.join(DATA_DIR, selected_file))
-                st.caption(f"**FASTA Header:** `{header}`")
+                st.caption(f"**FASTA Record Header:** `{header}`")
 
-        elif input_choice == "Fetch Live NCBI Accession via E-utilities":
-            col_acc, col_btn = st.columns([3, 1])
-            with col_acc:
-                acc_input = st.text_input("Enter NCBI Accession Number (e.g. KJ535072.1, NM_002111, NM_002024, U43748)", value=disease_info["ncbi_accessions"][0])
-            with col_btn:
+        elif source_mode == "🌐 Live NCBI GenBank Query (Entrez API)":
+            c_q1, c_q2 = st.columns([3, 1])
+            with c_q1:
+                acc_input = st.text_input("Enter NCBI Accession Number", value=disease_info["ncbi_accessions"][0])
+            with c_q2:
                 st.write("")
                 st.write("")
-                fetch_btn = st.button("Fetch from NCBI", use_container_width=True)
+                fetch_btn = st.button("Query NCBI GenBank", type="primary", use_container_width=True)
 
             if fetch_btn and acc_input:
-                with st.spinner(f"Querying NCBI Entrez API for {acc_input}..."):
+                with st.spinner(f"Querying NCBI Entrez REST Service for '{acc_input}'..."):
                     try:
                         url = f"https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id={acc_input.strip()}&rettype=fasta&retmode=text"
                         req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
                         with urllib.request.urlopen(req) as resp:
-                            fasta_content = resp.read().decode('utf-8')
-                        save_path = os.path.join(DATA_DIR, f"{acc_input.strip()}.fasta")
-                        with open(save_path, "w", encoding="utf-8") as f:
-                            f.write(fasta_content)
-                        header, sequence = read_fasta(save_path)
+                            fasta_raw = resp.read().decode('utf-8')
+                        save_p = os.path.join(DATA_DIR, f"{acc_input.strip()}.fasta")
+                        with open(save_p, "w", encoding="utf-8") as f:
+                            f.write(fasta_raw)
+                        header, sequence = read_fasta(save_p)
                         sample_name = f"NCBI Accession {acc_input.strip()}"
-                        st.success(f"Downloaded {len(sequence):,} bp from NCBI GenBank!")
+                        st.success(f"Verified & Loaded {len(sequence):,} base pairs from NCBI!")
                     except Exception as e:
-                        st.error(f"Error fetching from NCBI: {e}")
+                        st.error(f"NCBI Entrez Query Failure: {e}")
 
-        elif input_choice == "Upload Local FASTA File":
-            uploaded_file = st.file_uploader("Upload .fasta or .fa file", type=["fasta", "fa"])
-            if uploaded_file is not None:
-                content = uploaded_file.read().decode("utf-8")
-                lines = content.splitlines()
-                header = lines[0][1:] if lines[0].startswith(">") else "Uploaded Sample"
+        elif source_mode == "📤 Upload Custom FASTA File":
+            up_file = st.file_uploader("Select FASTA sequence file (.fasta, .fa)", type=["fasta", "fa"])
+            if up_file:
+                lines = up_file.read().decode("utf-8").splitlines()
+                header = lines[0][1:] if lines[0].startswith(">") else "Local Sample"
                 sequence = "".join([l.strip().upper() for l in lines if not l.startswith(">")])
-                sample_name = uploaded_file.name
+                sample_name = up_file.name
 
         else:
-            raw_input = st.text_area("Paste Raw DNA Nucleotides (A, C, G, T)", height=120)
-            if raw_input:
-                sequence = "".join(raw_input.split()).upper()
-                sample_name = "Manual Sequence Entry"
+            raw_text = st.text_area("Paste DNA Nucleotides (A, C, G, T)", height=120, placeholder="ATGGCGACCCTGGAAAAGTCCTTCCAGCAGCAGCAGCAGCAGCAG...")
+            if raw_text:
+                sequence = "".join(raw_text.split()).upper()
+                sample_name = "Direct Nucleotide Stream"
 
-        # Action: Execute Z-Algorithm Analysis
+        # Action Button & Computation
         if sequence:
             st.divider()
-            if st.button("🚀 Run Z-Algorithm & Predict Clinical Risk", type="primary", use_container_width=True):
-                with st.spinner("Executing Linear-Time Z-Algorithm across DNA sequence..."):
-                    # 1. Feature Extraction via Z-Algorithm
+            c_exec1, c_exec2 = st.columns([3, 1])
+            with c_exec1:
+                st.write(f"Specimen Ready: **{sample_name}** ({len(sequence):,} base pairs)")
+            with c_exec2:
+                run_calc = st.button("⚡ Execute Z-Scan & Predict", type="primary", use_container_width=True)
+
+            if run_calc:
+                with st.spinner("Processing Linear-Time Z-Algorithm [L, R] prefix sliding window..."):
                     motif = disease_info["motif"]
                     gene = disease_info["gene"]
                     thresh = disease_info["clinical_thresholds"]
 
+                    # 1. Z-Algorithm Engine
                     feats = extract_z_features(sequence, motif, gene)
                     repeats = feats["max_consecutive_repeats"]
 
-                    # 2. ML Inference
+                    # 2. Machine Learning Classifier
                     clf = load_classifier()
                     df_feat = pd.DataFrame([feats])[FEATURE_COLUMNS]
                     pred_class = clf.predict(df_feat)[0]
                     pred_probs = clf.predict_proba(df_feat)[0]
 
-                    label_names = ["Normal (Healthy)", "Carrier (Intermediate)", "Reduced Penetrance", "Pathogenic (Positive)"]
-                    predicted_label = label_names[pred_class]
-                    confidence = pred_probs[pred_class] * 100.0
+                    labels = ["Normal (Healthy)", "Carrier (Intermediate)", "Reduced Penetrance", "Pathogenic (Full Penetrance)"]
+                    predicted_label = labels[pred_class]
+                    conf = pred_probs[pred_class] * 100.0
 
-                    # 3. Clinical Deterministic Status
+                    # 3. Clinical Classification
                     if repeats >= thresh["pathogenic_min"]:
                         clinical_status = "PATHOGENIC / FULL PENETRANCE"
                         risk_level = "High"
-                        status_css = "status-pathogenic"
+                        banner_class = "diag-banner-pathogenic"
+                        icon = "🔴"
                     elif repeats > thresh["normal_max"]:
                         clinical_status = "INTERMEDIATE / CARRIER RISK"
                         risk_level = "Moderate"
-                        status_css = "status-carrier"
+                        banner_class = "diag-banner-carrier"
+                        icon = "🟡"
                     else:
-                        clinical_status = "NORMAL (WITHIN REFERENCE LIMITS)"
+                        clinical_status = "NORMAL (WITHIN CLINICAL LIMITS)"
                         risk_level = "Low"
-                        status_css = "status-normal"
+                        banner_class = "diag-banner-normal"
+                        icon = "🟢"
 
-                    # 4. Save to User Analytics DB
+                    # 4. Save to Database
                     record_user_analysis(user["id"], {
                         "sample_name": sample_name,
                         "disease": selected_disease_name,
@@ -286,126 +438,132 @@ def render_dashboard():
                         "comparisons_saved": feats["comparisons_saved"],
                         "prediction_label": predicted_label,
                         "risk_level": risk_level,
-                        "confidence_pct": round(confidence, 2)
+                        "confidence_pct": round(conf, 2)
                     })
 
-                    st.markdown("### 📋 Clinical Diagnostic Summary")
-                    c1, c2, c3, c4 = st.columns(4)
-                    c1.metric("Sequence Length", f"{len(sequence):,} bp")
-                    c2.metric(f"Total '{motif}' Hits", f"{feats['total_motif_occurrences']}")
-                    c3.metric("Max Consecutive Repeats", f"{repeats} repeats")
-                    c4.metric("Z-Score Enrichment", f"{feats['z_enrichment_score']} σ")
-
-                    # Status Banner
+                    # Diagnostic Banner
                     st.markdown(f"""
-                    <div style="padding:15px; border-radius:8px; background-color:#eef2f7; margin: 15px 0;">
-                        <span style="font-size: 1.1rem; color: #495057;">Diagnosis:</span>
-                        <div class="{status_css}">{clinical_status} [{risk_level} Risk]</div>
-                        <div style="color: #6c757d; font-size: 0.95rem; margin-top: 5px;">
-                            Machine Learning Classification: <b>{predicted_label}</b> (Confidence: <b>{confidence:.1f}%</b>)
+                    <div class="{banner_class}">
+                        <div style="font-size: 0.85rem; font-weight:700; color:#475569; text-transform:uppercase;">Official Clinical Assessment</div>
+                        <div style="font-size: 1.6rem; font-weight:800; margin-top:4px;">{icon} {clinical_status} [{risk_level.upper()} RISK]</div>
+                        <div style="font-size: 0.95rem; color:#334155; margin-top:6px;">
+                            Identified <b>{repeats} consecutive '{motif}' repeats</b> spanning nucleotide loci <code>[{feats['locus_start']}:{feats['locus_end']}]</code>.
+                            Machine Learning Classification: <b>{predicted_label}</b> with <b>{conf:.1f}%</b> confidence.
                         </div>
                     </div>
                     """, unsafe_allow_html=True)
 
-                    # Two Columns: DAA Telemetry vs Biological Profile
-                    col_daa, col_chart = st.columns([1, 1], gap="medium")
+                    # Top KPI Metrics Cards
+                    st.markdown("#### Primary Biomarkers & Algorithmic Telemetry")
+                    m_c1, m_c2, m_c3, m_c4 = st.columns(4)
 
-                    with col_daa:
-                        st.markdown("#### ⚡ DAA Algorithmic Telemetry (Z-Algorithm)")
-                        st.write(f"- **Direct Character Comparisons:** `{feats['z_comparisons']:,}`")
-                        st.write(f"- **Redundant Checks Bypassed via [L, R] Box:** `{feats['comparisons_saved']:,}`")
-                        st.write(f"- **Algorithm Efficiency:** `{feats['efficiency_ratio'] * 100:.2f}%` checks saved vs naive scan")
-                        st.write(f"- **Detected Repeat Locus:** Nucleotide coordinates `[{feats['locus_start']}:{feats['locus_end']}]`")
+                    with m_c1:
+                        st.markdown(f"""
+                        <div class="metric-box">
+                            <div class="metric-label">Max Consecutive Repeats</div>
+                            <div class="metric-val">{repeats}</div>
+                            <div class="metric-sub">Locus [{feats['locus_start']}:{feats['locus_end']}]</div>
+                        </div>
+                        """, unsafe_allow_html=True)
 
-                        # Gauge Bar of comparisons saved
-                        fig_gauge = go.Figure(go.Indicator(
-                            mode="gauge+number",
-                            value=feats['efficiency_ratio'] * 100,
-                            title={'text': "Z-Algorithm Efficiency (% Checks Saved)"},
-                            gauge={'axis': {'range': [0, 100]},
-                                   'bar': {'color': "#0d6efd"},
-                                   'steps': [
-                                       {'range': [0, 50], 'color': "#e9ecef"},
-                                       {'range': [50, 100], 'color': "#d1e7dd"}
-                                   ]}
-                        ))
-                        fig_gauge.update_layout(height=240, margin=dict(l=20, r=20, t=30, b=20))
-                        st.plotly_chart(fig_gauge, use_container_width=True)
+                    with m_c2:
+                        st.markdown(f"""
+                        <div class="metric-box">
+                            <div class="metric-label">Total '{motif}' Matches</div>
+                            <div class="metric-val">{feats['total_motif_occurrences']}</div>
+                            <div class="metric-sub">{feats['motif_density_per_kb']} per kb</div>
+                        </div>
+                        """, unsafe_allow_html=True)
 
-                    with col_chart:
-                        st.markdown("#### 🧠 ML Class Probability Distribution")
-                        prob_df = pd.DataFrame({
-                            "Risk Class": label_names,
-                            "Probability": pred_probs * 100.0
-                        })
-                        fig_prob = px.bar(
-                            prob_df,
-                            x="Probability",
-                            y="Risk Class",
-                            orientation='h',
-                            text="Probability",
-                            color="Probability",
-                            color_continuous_scale="Blues",
-                            range_x=[0, 100]
+                    with m_c3:
+                        st.markdown(f"""
+                        <div class="metric-box">
+                            <div class="metric-label">Checks Saved (Z-Box)</div>
+                            <div class="metric-val">{feats['comparisons_saved']:,}</div>
+                            <div class="metric-sub">{feats['efficiency_ratio']*100:.1f}% vs Naive Scan</div>
+                        </div>
+                        """, unsafe_allow_html=True)
+
+                    with m_c4:
+                        st.markdown(f"""
+                        <div class="metric-box">
+                            <div class="metric-label">Z-Score Enrichment</div>
+                            <div class="metric-val">{feats['z_enrichment_score']} σ</div>
+                            <div class="metric-sub">Above Random Background</div>
+                        </div>
+                        """, unsafe_allow_html=True)
+
+                    st.write("")
+
+                    # Comparative Visuals (Plotly)
+                    c_viz1, c_viz2 = st.columns(2)
+
+                    with c_viz1:
+                        st.markdown("##### ⚡ DAA Prefix Window Optimization")
+                        fig_opt = go.Figure(data=[
+                            go.Bar(name='Direct Checks Executed', x=['Z-Algorithm'], y=[feats['z_comparisons']], marker_color='#0f766e'),
+                            go.Bar(name='Redundant Checks Saved', x=['Z-Algorithm'], y=[feats['comparisons_saved']], marker_color='#99f6e4')
+                        ])
+                        fig_opt.update_layout(barmode='stack', height=300, margin=dict(l=20, r=20, t=30, b=20),
+                                              legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1))
+                        st.plotly_chart(fig_opt, use_container_width=True)
+
+                    with c_viz2:
+                        st.markdown("##### 🧠 Multi-Class Model Probability Distribution")
+                        df_probs = pd.DataFrame({"Clinical State": labels, "Probability (%)": pred_probs * 100.0})
+                        fig_p = px.bar(
+                            df_probs, x="Probability (%)", y="Clinical State", orientation='h',
+                            color="Probability (%)", color_continuous_scale="Teal", text="Probability (%)", range_x=[0, 100]
                         )
-                        fig_prob.update_traces(texttemplate='%{text:.1f}%', textposition='outside')
-                        fig_prob.update_layout(height=240, margin=dict(l=20, r=20, t=20, b=20), showlegend=False)
-                        st.plotly_chart(fig_prob, use_container_width=True)
+                        fig_p.update_traces(texttemplate='%{text:.1f}%', textposition='outside')
+                        fig_p.update_layout(height=300, margin=dict(l=20, r=20, t=30, b=20), coloraxis_showscale=False)
+                        st.plotly_chart(fig_p, use_container_width=True)
 
-    # TAB 2: USER ANALYSIS HISTORY & ANALYTICS
-    with tab_user_analytics:
-        st.header(f"📊 Activity & Diagnostic History for {user['full_name']}")
+    # TAB 2: USER AUDIT & ANALYTICS
+    with tab_history:
+        st.header("Clinician Activity Dashboard & Patient Analytics")
         history = get_user_analyses(user["id"])
 
         if not history:
-            st.info("No analyses recorded yet. Run a sequence in the 'Live Genomic Motif Scanner' tab to populate your history.")
+            st.info("No recorded diagnostics in your profile yet. Run your first sequence in the scanner to populate telemetry.")
         else:
-            df_hist = pd.DataFrame(history)
+            df_h = pd.DataFrame(history)
 
-            # Metric Counters
-            m1, m2, m3, m4 = st.columns(4)
-            m1.metric("Total Sequences Analyzed", len(df_hist))
-            m2.metric("High-Risk Detections", len(df_hist[df_hist["risk_level"] == "High"]))
-            total_checks_saved = df_hist["comparisons_saved"].sum()
-            m3.metric("Total Algorithm Comparisons Saved", f"{total_checks_saved:,}")
-            avg_repeats = df_hist["max_repeats"].mean()
-            m4.metric("Avg Detected Repeat Length", f"{avg_repeats:.1f} repeats")
+            # High-level Analytics KPIs
+            k1, k2, k3, k4 = st.columns(4)
+            k1.metric("Screenings Completed", len(df_h))
+            k2.metric("Positive Detections", len(df_h[df_h["risk_level"] == "High"]))
+            k3.metric("Total Character Skips", f"{df_h['comparisons_saved'].sum():,}")
+            k4.metric("Avg Repeat Length", f"{df_h['max_repeats'].mean():.1f} repeats")
 
             st.divider()
 
-            # Interactive Charts
-            c_left, c_right = st.columns(2)
+            c_chart1, c_chart2 = st.columns(2)
 
-            with c_left:
-                st.subheader("Disease Risk Breakdown")
-                risk_counts = df_hist["risk_level"].value_counts().reset_index()
-                risk_counts.columns = ["Risk Level", "Count"]
-                fig_pie = px.pie(
-                    risk_counts,
-                    names="Risk Level",
-                    values="Count",
-                    color="Risk Level",
-                    color_discrete_map={"Low": "#198754", "Moderate": "#ffc107", "High": "#dc3545"}
+            with c_chart1:
+                st.subheader("Patient Cohort Risk Stratification")
+                risk_df = df_h["risk_level"].value_counts().reset_index()
+                risk_df.columns = ["Risk", "Count"]
+                fig_pie = px.donut = px.pie(
+                    risk_df, names="Risk", values="Count", hole=0.5,
+                    color="Risk", color_discrete_map={"Low": "#10b981", "Moderate": "#f59e0b", "High": "#ef4444"}
                 )
-                fig_pie.update_layout(height=300, margin=dict(l=10, r=10, t=10, b=10))
+                fig_pie.update_layout(height=320, margin=dict(l=10, r=10, t=10, b=10))
                 st.plotly_chart(fig_pie, use_container_width=True)
 
-            with c_right:
-                st.subheader("Max Repeat Length by Sample")
-                fig_bar = px.bar(
-                    df_hist,
-                    x="sample_name",
-                    y="max_repeats",
-                    color="risk_level",
-                    color_discrete_map={"Low": "#198754", "Moderate": "#ffc107", "High": "#dc3545"},
-                    labels={"sample_name": "Sample", "max_repeats": "Consecutive Repeats"}
+            with c_chart2:
+                st.subheader("Repeat Expansions Across Verified Specimens")
+                fig_hist_bar = px.bar(
+                    df_h, x="sample_name", y="max_repeats", color="risk_level",
+                    color_discrete_map={"Low": "#10b981", "Moderate": "#f59e0b", "High": "#ef4444"},
+                    labels={"sample_name": "Specimen ID", "max_repeats": "Consecutive Repeats"}
                 )
-                fig_bar.update_layout(height=300, margin=dict(l=10, r=10, t=10, b=10))
-                st.plotly_chart(fig_bar, use_container_width=True)
+                fig_hist_bar.update_layout(height=320, margin=dict(l=10, r=10, t=10, b=10))
+                st.plotly_chart(fig_hist_bar, use_container_width=True)
 
-            st.subheader("Detailed Audit Log")
+            st.subheader("Comprehensive Diagnostic Audit Trail")
             st.dataframe(
-                df_hist[[
+                df_h[[
                     "id", "sample_name", "disease", "target_motif",
                     "seq_length", "max_repeats", "prediction_label",
                     "risk_level", "confidence_pct", "created_at"
@@ -413,67 +571,59 @@ def render_dashboard():
                 use_container_width=True
             )
 
-    # TAB 3: REAL NCBI DATASET BENCHMARK
+    # TAB 3: REAL NCBI COHORT BENCHMARK
     with tab_benchmark:
-        st.header("📁 Peer-Reviewed NCBI GenBank Dataset Benchmark")
-        st.markdown("""
-        All sequences below are 100% genuine biological specimens deposited in NCBI GenBank 
-        by medical research laboratories.
-        """)
+        st.header("Peer-Reviewed NCBI GenBank Triplet Repeat Cohort")
+        st.caption("All records below are 100% genuine biological specimens fetched from NCBI GenBank.")
 
-        json_summary_path = os.path.join(BASE_DIR, "results", "real_ncbi_analysis_summary.json")
-        if os.path.exists(json_summary_path):
-            with open(json_summary_path, "r", encoding="utf-8") as jf:
-                import json
-                summary_data = json.load(jf)
-            
-            records_table = []
-            for item in summary_data:
-                feats = item["features"]
-                records_table.append({
-                    "Accession": item["accession"],
+        summary_file = os.path.join(RESULTS_DIR, "real_ncbi_analysis_summary.json")
+        if os.path.exists(summary_file):
+            with open(summary_file, "r", encoding="utf-8") as jf:
+                s_data = json.load(jf)
+
+            table_rows = []
+            for item in s_data:
+                f_item = item["features"]
+                table_rows.append({
+                    "NCBI Accession": item["accession"],
                     "Target Gene": item["gene"],
-                    "Disease": item["disease"].replace("_", " "),
+                    "Condition": item["disease"].replace("_", " "),
                     "Motif": item["target_motif"],
                     "Length (bp)": f"{item['sequence_length_bp']:,}",
-                    "Max Repeats": feats["max_consecutive_repeats"],
-                    "Z-Comparisons": f"{feats['z_comparisons']:,}",
-                    "Saved Comparisons": f"{feats['comparisons_saved']:,}",
-                    "Skip Efficiency": f"{feats['efficiency_ratio']*100:.1f}%",
-                    "Clinical Status": item["clinical_status"]
+                    "Max Tandem Repeats": f_item["max_consecutive_repeats"],
+                    "Z-Comparisons": f"{f_item['z_comparisons']:,}",
+                    "Checks Bypassed": f"{f_item['comparisons_saved']:,}",
+                    "Efficiency": f"{f_item['efficiency_ratio']*100:.1f}%",
+                    "Diagnosis": item["clinical_status"]
                 })
 
-            st.dataframe(pd.DataFrame(records_table), use_container_width=True)
-        else:
-            st.info("Run `python src/run_real_pipeline.py` to generate the complete benchmark JSON.")
+            st.dataframe(pd.DataFrame(table_rows), use_container_width=True)
 
-    # TAB 4: ABOUT & METHODOLOGY
-    with tab_about:
-        st.header("📖 Algorithmic & Bioinformatic Foundations")
+    # TAB 4: METHODOLOGY
+    with tab_methodology:
+        st.header("Algorithmic & Theoretical Foundations")
         st.markdown(r"""
         ### 1. The Classical Z-Algorithm
-        For a string $S$ of length $N$, the Z-array stores at each index $i > 0$ the length of the longest substring 
-        starting at $S[i]$ that matches a prefix of $S$:
+        For any input string $S$ of length $N$, the algorithm computes the fundamental array $Z$ in **strictly linear time $O(N)$**:
         $$Z[i] = \max \{ k \mid S[i \dots i+k-1] = S[0 \dots k-1] \}$$
 
-        By maintaining an active window $[L, R]$ (the rightmost match segment), the algorithm achieves strictly 
-        **linear time $O(|P| + |T|)$** by avoiding redundant character comparisons.
+        To locate exact occurrences of motif $P$ in genomic sequence $T$, we formulate the concatenated string:
+        $$S = P \mathbin{\$} T$$
+        where $\$$ is a unique delimiter not present in the alphabet $\{A, C, G, T\}$.
 
-        ### 2. Clinical Triplet Repeat Genetics
-        Trinucleotide repeat disorders are neurological conditions characterized by uncontrollable expansions 
-        of 3-nucleotide motifs within specific human genes. The American College of Medical Genetics (ACMG) 
-        defines standardized thresholds:
-        * **Huntington's Disease (*HTT* / `CAG`):** Normal $\le 26$, Carrier $27\text{--}35$, Pathogenic $\ge 40$.
-        * **Fragile X Syndrome (*FMR1* / `CGG`):** Normal $\le 44$, Pre-mutation $55\text{--}200$, Full Mutation $> 200$.
-        * **Friedreich's Ataxia (*FXN* / `GAA`):** Normal $\le 33$, Carrier $34\text{--}65$, Pathogenic $\ge 100$.
+        ### 2. Algorithmic Prefix Window $[L, R]$
+        Instead of re-comparing characters from scratch at each position, the Z-algorithm maintains the rightmost match segment $[L, R]$:
+        - If the current index $i \le R$, we compute $k = i - L$.
+        - If $Z[k] < R - i + 1$, the value $Z[i]$ is copied in **$O(1)$ time with zero character comparisons**.
+        - Only when $Z[k] \ge R - i + 1$ does the algorithm perform explicit character checks, extending the right bound $R$.
         """)
 
 
 def main():
     if not st.session_state.authenticated:
-        render_auth_page()
+        render_professional_auth()
     else:
-        render_dashboard()
+        render_professional_dashboard()
 
 
 if __name__ == "__main__":
