@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GenomiX | Clinical Motif Platform (C++ Edition)</title>
+<style>
+    :root {
+        --bg-primary: #0f172a;
+        --bg-card: #1e293b;
+        --bg-input: #334155;
+        --text-primary: #f8fafc;
+        --text-secondary: #94a3b8;
+        --border-color: rgba(255, 255, 255, 0.1);
+        --accent: #0ea5e9;
+        --accent-hover: #0284c7;
+        --success: #10b981;
+        --warning: #f59e0b;
+        --danger: #ef4444;
+    }
+
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+        background-color: var(--bg-primary);
+        color: var(--text-primary);
+        line-height: 1.5;
+        padding-bottom: 50px;
+    }
+
+    .container {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 24px;
+    }
+
+    header {
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 16px;
+        margin-bottom: 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    h1 {
+        font-size: 1.6rem;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+    }
+
+    .subtitle {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+    }
+
+    .card {
+        background-color: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        padding: 24px;
+        margin-bottom: 20px;
+    }
+
+    .nav-tabs {
+        display: flex;
+        gap: 16px;
+        border-bottom: 1px solid var(--border-color);
+        margin-bottom: 20px;
+    }
+
+    .tab-btn {
+        background: none;
+        border: none;
+        color: var(--text-secondary);
+        font-size: 0.95rem;
+        font-weight: 600;
+        padding: 10px 4px;
+        cursor: pointer;
+        position: relative;
+    }
+
+    .tab-btn.active {
+        color: var(--text-primary);
+    }
+
+    .tab-btn.active::after {
+        content: '';
+        position: absolute;
+        bottom: -1px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background-color: var(--accent);
+    }
+
+    .form-group {
+        margin-bottom: 16px;
+    }
+
+    label {
+        display: block;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+        margin-bottom: 6px;
+    }
+
+    input[type="text"], input[type="password"], select, textarea {
+        width: 100%;
+        padding: 10px 14px;
+        background-color: var(--bg-input);
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        color: var(--text-primary);
+        font-size: 0.95rem;
+    }
+
+    textarea {
+        font-family: "JetBrains Mono", Consolas, monospace;
+        resize: vertical;
+    }
+
+    input:focus, select:focus, textarea:focus {
+        outline: none;
+        border-color: var(--accent);
+    }
+
+    .btn {
+        display: inline-block;
+        padding: 10px 20px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+        transition: background-color 0.15s ease;
+    }
+
+    .btn-primary {
+        background-color: var(--accent);
+        color: #fff;
+        width: 100%;
+    }
+
+    .btn-primary:hover {
+        background-color: var(--accent-hover);
+    }
+
+    .btn-outline {
+        background: none;
+        border: 1px solid var(--border-color);
+        color: var(--text-secondary);
+    }
+
+    .btn-outline:hover {
+        background-color: rgba(255, 255, 255, 0.05);
+        color: var(--text-primary);
+    }
+
+    /* Grid */
+    .grid-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    .grid-4 {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-top: 16px;
+    }
+
+    .metric-card {
+        background-color: rgba(255, 255, 255, 0.03);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 14px;
+    }
+
+    .metric-label {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+        font-weight: 600;
+    }
+
+    .metric-value {
+        font-size: 1.4rem;
+        font-weight: 700;
+        margin-top: 4px;
+    }
+
+    /* Report Card */
+    .report-card {
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 20px;
+        margin-top: 20px;
+        background-color: rgba(255, 255, 255, 0.02);
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 1.1rem;
+        font-weight: 700;
+        margin-bottom: 14px;
+    }
+
+    .badge-normal {
+        background-color: rgba(16, 185, 129, 0.15);
+        color: var(--success);
+        border: 1px solid var(--success);
+    }
+
+    .badge-carrier {
+        background-color: rgba(245, 158, 11, 0.15);
+        color: var(--warning);
+        border: 1px solid var(--warning);
+    }
+
+    .badge-pathogenic {
+        background-color: rgba(239, 68, 68, 0.15);
+        color: var(--danger);
+        border: 1px solid var(--danger);
+    }
+
+    .report-item {
+        margin-bottom: 10px;
+        font-size: 0.95rem;
+    }
+
+    .report-item b {
+        color: var(--text-secondary);
+        display: inline-block;
+        width: 220px;
+    }
+
+    /* Table */
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 12px;
+        font-size: 0.9rem;
+    }
+
+    th, td {
+        padding: 10px 12px;
+        text-align: left;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    th {
+        color: var(--text-secondary);
+        font-weight: 600;
+    }
+
+    .hidden {
+        display: none !important;
+    }
+</style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <div>
+            <h1>GenomiX | Clinical Motif Platform</h1>
+            <div class="subtitle">High-Performance C++ Sequence Verification & Repeat Expansion Diagnostics</div>
+        </div>
+        <div id="userProfileBar" class="hidden" style="text-align: right;">
+            <div id="activeUserName" style="font-weight: 600;">Dr. User</div>
+            <div id="activeUserInst" style="font-size: 0.8rem; color: var(--text-secondary);">Clinic</div>
+            <button class="btn btn-outline" style="padding: 4px 10px; font-size: 0.8rem; margin-top: 6px;" onclick="logout()">Log Out</button>
+        </div>
+    </header>
+
+    <!-- AUTH SECTION -->
+    <div id="authSection">
+        <div style="max-width: 500px; margin: 40px auto;">
+            <div class="card">
+                <div class="nav-tabs">
+                    <button class="tab-btn active" onclick="switchAuthTab('signin')">Sign In</button>
+                    <button class="tab-btn" onclick="switchAuthTab('signup')">Create Account</button>
+                </div>
+
+                <div id="signinTab">
+                    <div class="form-group">
+                        <label>Username or Email</label>
+                        <input type="text" id="loginUser" placeholder="e.g. prattss07">
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="loginPass" placeholder="Enter password">
+                    </div>
+                    <button class="btn btn-primary" onclick="submitLogin()">Sign In</button>
+                    <div id="loginMsg" style="margin-top: 10px; font-size: 0.85rem;"></div>
+                </div>
+
+                <div id="signupTab" class="hidden">
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <input type="text" id="regName" placeholder="e.g. Prathamesh P">
+                    </div>
+                    <div class="form-group">
+                        <label>Institution / Hospital</label>
+                        <input type="text" id="regInst" placeholder="e.g. Neurogenetics Lab">
+                    </div>
+                    <div class="form-group">
+                        <label>Username</label>
+                        <input type="text" id="regUser" placeholder="e.g. prattss07">
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="text" id="regEmail" placeholder="e.g. user@hospital.org">
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="regPass" placeholder="Minimum 6 characters">
+                    </div>
+                    <button class="btn btn-primary" onclick="submitRegister()">Create Account</button>
+                    <div id="regMsg" style="margin-top: 10px; font-size: 0.85rem;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN DASHBOARD (Visible when logged in) -->
+    <div id="dashboardSection" class="hidden">
+        <div class="nav-tabs">
+            <button class="tab-btn active" onclick="switchMainTab('scanner')">Sequence Scanner</button>
+            <button class="tab-btn" onclick="switchMainTab('history')">Analysis History</button>
+            <button class="tab-btn" onclick="switchMainTab('cohort')">NCBI Reference Cohort</button>
+        </div>
+
+        <!-- TAB 1: SCANNER -->
+        <div id="scannerTab">
+            <div class="card">
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label>Target Condition Panel</label>
+                        <select id="diseaseSelect" onchange="updateDiseaseInfo()">
+                            <option value="Huntington_Disease">Huntington's Disease (HTT Gene - CAG Motif)</option>
+                            <option value="Fragile_X_Syndrome">Fragile X Syndrome (FMR1 Gene - CGG Motif)</option>
+                            <option value="Friedreich_Ataxia">Friedreich's Ataxia (FXN Gene - GAA Motif)</option>
+                            <option value="Myotonic_Dystrophy_Type_1">Myotonic Dystrophy Type 1 (DMPK Gene - CTG Motif)</option>
+                            <option value="Spinocerebellar_Ataxia_Type_1">Spinocerebellar Ataxia 1 (ATXN1 Gene - CAG Motif)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Input Method</label>
+                        <select id="inputModeSelect" onchange="toggleInputMode()">
+                            <option value="file">NCBI GenBank Clones</option>
+                            <option value="dna">Paste DNA Sequence</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="fileInputContainer" class="form-group">
+                    <label>Select Pre-loaded NCBI Specimen</label>
+                    <select id="fileDropdown"></select>
+                </div>
+
+                <div id="dnaInputContainer" class="form-group hidden">
+                    <label>Paste DNA Nucleotides (A, C, G, T)</label>
+                    <textarea id="dnaTextInput" rows="5" placeholder="ATGGCGACCCTGGAAAAGTCCTTCCAGCAGCAGCAGCAGCAGCAG..."></textarea>
+                </div>
+
+                <button class="btn btn-primary" style="margin-top: 8px;" onclick="runAnalysis()">Run Diagnostic Analysis</button>
+            </div>
+
+            <!-- RESULT CARD -->
+            <div id="reportContainer" class="hidden">
+                <div class="card">
+                    <div style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-secondary); font-weight: 600;">Molecular Genetics Pathology Report</div>
+                    <div id="reportBadge" class="status-badge" style="margin-top: 8px;"></div>
+
+                    <div class="report-item"><b>Specimen Identifier:</b> <span id="repSpecimen"></span></div>
+                    <div class="report-item"><b>Condition & Gene:</b> <span id="repCondition"></span></div>
+                    <div class="report-item"><b>Target Motif:</b> <span id="repMotif"></span></div>
+                    <div class="report-item"><b>Tandem Repeat Locus:</b> <span id="repLocus"></span></div>
+                    <div class="report-item"><b>Machine Learning Prediction:</b> <span id="repML"></span></div>
+                    <div class="report-item"><b>Clinical Recommendation:</b> <span id="repRec"></span></div>
+
+                    <div class="grid-4">
+                        <div class="metric-card">
+                            <div class="metric-label">Sequence Length</div>
+                            <div class="metric-value" id="metLen">-</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-label">Max Repeat Count</div>
+                            <div class="metric-value" id="metRepeats">-</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-label">Total Motif Matches</div>
+                            <div class="metric-value" id="metMatches">-</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-label">Model Confidence</div>
+                            <div class="metric-value" id="metConf">-</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: HISTORY -->
+        <div id="historyTab" class="hidden">
+            <div class="card">
+                <h3>User Analysis Audit Trail</h3>
+                <div class="subtitle" style="margin-bottom: 16px;">Chronological screening records logged for active user</div>
+                <div style="overflow-x: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Sample</th>
+                                <th>Condition</th>
+                                <th>Motif</th>
+                                <th>Length</th>
+                                <th>Max Repeats</th>
+                                <th>Status</th>
+                                <th>Confidence</th>
+                                <th>Timestamp</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 3: COHORT -->
+        <div id="cohortTab" class="hidden">
+            <div class="card">
+                <h3>NCBI GenBank Reference Cohort</h3>
+                <div class="subtitle" style="margin-bottom: 16px;">100% authentic peer-reviewed genomic specimens verified with C++ Z-Algorithm</div>
+                <div style="overflow-x: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Accession</th>
+                                <th>Specimen File</th>
+                                <th>Condition</th>
+                                <th>Gene</th>
+                                <th>Length</th>
+                                <th>Max Repeats</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cohortTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    let activeUser = null;
+
+    function switchAuthTab(tab) {
+        document.querySelectorAll('#authSection .tab-btn').forEach(b => b.classList.remove('active'));
+        if (tab === 'signin') {
+            document.querySelectorAll('#authSection .tab-btn')[0].classList.add('active');
+            document.getElementById('signinTab').classList.remove('hidden');
+            document.getElementById('signupTab').classList.add('hidden');
+        } else {
+            document.querySelectorAll('#authSection .tab-btn')[1].classList.add('active');
+            document.getElementById('signinTab').classList.add('hidden');
+            document.getElementById('signupTab').classList.remove('hidden');
+        }
+    }
+
+    function switchMainTab(tab) {
+        document.querySelectorAll('#dashboardSection .tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('scannerTab').classList.add('hidden');
+        document.getElementById('historyTab').classList.add('hidden');
+        document.getElementById('cohortTab').classList.add('hidden');
+
+        if (tab === 'scanner') {
+            document.querySelectorAll('#dashboardSection .tab-btn')[0].classList.add('active');
+            document.getElementById('scannerTab').classList.remove('hidden');
+        } else if (tab === 'history') {
+            document.querySelectorAll('#dashboardSection .tab-btn')[1].classList.add('active');
+            document.getElementById('historyTab').classList.remove('hidden');
+            loadHistory();
+        } else {
+            document.querySelectorAll('#dashboardSection .tab-btn')[2].classList.add('active');
+            document.getElementById('cohortTab').classList.remove('hidden');
+            loadCohort();
+        }
+    }
+
+    function toggleInputMode() {
+        const mode = document.getElementById('inputModeSelect').value;
+        if (mode === 'file') {
+            document.getElementById('fileInputContainer').classList.remove('hidden');
+            document.getElementById('dnaInputContainer').classList.add('hidden');
+        } else {
+            document.getElementById('fileInputContainer').classList.add('hidden');
+            document.getElementById('dnaInputContainer').classList.remove('hidden');
+        }
+    }
+
+    async function submitLogin() {
+        const u = document.getElementById('loginUser').value.trim();
+        const p = document.getElementById('loginPass').value;
+        const msg = document.getElementById('loginMsg');
+
+        try {
+            const res = await fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: u, password: p })
+            });
+            const data = await res.json();
+            if (data.success) {
+                activeUser = data.user;
+                document.getElementById('activeUserName').textContent = activeUser.full_name;
+                document.getElementById('activeUserInst').textContent = activeUser.institution || activeUser.email;
+                document.getElementById('userProfileBar').classList.remove('hidden');
+                document.getElementById('authSection').classList.add('hidden');
+                document.getElementById('dashboardSection').classList.remove('hidden');
+                loadFiles();
+            } else {
+                msg.style.color = '#ef4444';
+                msg.textContent = data.message || 'Login failed.';
+            }
+        } catch (e) {
+            msg.textContent = 'Connection error.';
+        }
+    }
+
+    async function submitRegister() {
+        const full_name = document.getElementById('regName').value.trim();
+        const inst = document.getElementById('regInst').value.trim();
+        const user = document.getElementById('regUser').value.trim();
+        const email = document.getElementById('regEmail').value.trim();
+        const pass = document.getElementById('regPass').value;
+        const msg = document.getElementById('regMsg');
+
+        try {
+            const res = await fetch('/api/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    username: user,
+                    email: email,
+                    password: pass,
+                    full_name: full_name,
+                    institution: inst
+                })
+            });
+            const data = await res.json();
+            if (data.success) {
+                msg.style.color = '#10b981';
+                msg.textContent = 'Registration successful! You may now sign in.';
+                setTimeout(() => switchAuthTab('signin'), 1500);
+            } else {
+                msg.style.color = '#ef4444';
+                msg.textContent = data.message;
+            }
+        } catch (e) {
+            msg.textContent = 'Connection error.';
+        }
+    }
+
+    function logout() {
+        activeUser = null;
+        document.getElementById('userProfileBar').classList.add('hidden');
+        document.getElementById('dashboardSection').classList.add('hidden');
+        document.getElementById('authSection').classList.remove('hidden');
+    }
+
+    async function loadFiles() {
+        try {
+            const res = await fetch('/api/files');
+            const data = await res.json();
+            const select = document.getElementById('fileDropdown');
+            select.innerHTML = '';
+            data.files.forEach(f => {
+                const opt = document.createElement('option');
+                opt.value = f;
+                opt.textContent = f;
+                select.appendChild(opt);
+            });
+        } catch (e) {}
+    }
+
+    async function runAnalysis() {
+        const disease = document.getElementById('diseaseSelect').value;
+        const mode = document.getElementById('inputModeSelect').value;
+        let payload = '';
+
+        if (mode === 'file') {
+            payload = document.getElementById('fileDropdown').value;
+        } else {
+            payload = document.getElementById('dnaTextInput').value.trim();
+            if (!payload) {
+                alert('Please enter a DNA sequence.');
+                return;
+            }
+        }
+
+        try {
+            const res = await fetch('/api/analyze', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    disease: disease,
+                    mode: mode,
+                    payload: payload,
+                    user_id: activeUser ? activeUser.id : 1
+                })
+            });
+            const resp = await res.json();
+            if (resp.success) {
+                displayReport(resp.data);
+            } else {
+                alert(resp.message || 'Analysis error');
+            }
+        } catch (e) {
+            alert('Server error occurred.');
+        }
+    }
+
+    function displayReport(data) {
+        document.getElementById('reportContainer').classList.remove('hidden');
+
+        const badge = document.getElementById('reportBadge');
+        badge.textContent = `${data.clinical_status} [${data.risk_level.toUpperCase()}]`;
+        badge.className = 'status-badge';
+        if (data.risk_level === 'High Risk') {
+            badge.classList.add('badge-pathogenic');
+        } else if (data.risk_level === 'Moderate Risk' || data.risk_level === 'Elevated Risk') {
+            badge.classList.add('badge-carrier');
+        } else {
+            badge.classList.add('badge-normal');
+        }
+
+        document.getElementById('repSpecimen').textContent = `${data.specimen} (${data.sequence_length_bp.toLocaleString()} bp)`;
+        document.getElementById('repCondition').textContent = `${data.disease.replace('_', ' ')} (${data.gene} Gene - Chromosome ${data.chromosome})`;
+        document.getElementById('repMotif').textContent = `5'-${data.motif}-3' (${data.total_motif_matches} total occurrences)`;
+        document.getElementById('repLocus').textContent = `${data.max_consecutive_repeats} Consecutive Repeats (Loci [${data.locus_start} : ${data.locus_end}])`;
+        document.getElementById('repML').textContent = `${data.predicted_label} (${data.confidence_pct.toFixed(1)}% Confidence)`;
+        document.getElementById('repRec').textContent = data.recommendation;
+
+        document.getElementById('metLen').textContent = data.sequence_length_bp.toLocaleString() + ' bp';
+        document.getElementById('metRepeats').textContent = data.max_consecutive_repeats + ' reps';
+        document.getElementById('metMatches').textContent = data.total_motif_matches;
+        document.getElementById('metConf').textContent = data.confidence_pct.toFixed(1) + '%';
+    }
+
+    async function loadHistory() {
+        if (!activeUser) return;
+        try {
+            const res = await fetch(`/api/history?user_id=${activeUser.id}`);
+            const data = await res.json();
+            const tbody = document.getElementById('historyTableBody');
+            tbody.innerHTML = '';
+            data.history.forEach(h => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><code>${h.sample_name}</code></td>
+                    <td>${h.disease.replace('_', ' ')}</td>
+                    <td><code>${h.motif}</code></td>
+                    <td>${h.seq_length.toLocaleString()} bp</td>
+                    <td><b>${h.max_repeats}</b></td>
+                    <td>${h.risk_level}</td>
+                    <td>${h.confidence_pct.toFixed(1)}%</td>
+                    <td>${h.created_at}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        } catch (e) {}
+    }
+
+    async function loadCohort() {
+        try {
+            const res = await fetch('/api/cohort');
+            const data = await res.json();
+            const tbody = document.getElementById('cohortTableBody');
+            tbody.innerHTML = '';
+            data.cohort.forEach(c => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><code>${c.accession}</code></td>
+                    <td><code>${c.filename}</code></td>
+                    <td>${c.disease}</td>
+                    <td><code>${c.gene}</code></td>
+                    <td>${c.length.toLocaleString()} bp</td>
+                    <td><b>${c.max_repeats}</b></td>
+                    <td>${c.status}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        } catch (e) {}
+    }
+</script>
+
+</body>
+</html>
