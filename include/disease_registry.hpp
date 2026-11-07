@@ -31,6 +31,8 @@ public:
     static bool hasDisease(const std::string& key);
     static const DiseaseInfo& getDisease(const std::string& key);
     static std::string detectDiseaseKey(const std::string& filename_or_text);
+    // Filename/header hints first (incl. NCBI accession numbers); if none, pick the panel whose motif forms the longest tandem run.
+    static std::string detectDiseaseKeyForSequence(const std::string& filename, const std::string& header, const std::string& sequence);
 };
 
 } // namespace genomix

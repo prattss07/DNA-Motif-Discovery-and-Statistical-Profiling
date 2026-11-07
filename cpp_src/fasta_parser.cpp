@@ -56,7 +56,6 @@ FastaRecord FastaParser::parseString(const std::string& raw_content, const std::
 
     size_t pos = 0;
     size_t len = raw_content.length();
-    bool in_header = false;
 
     while (pos < len) {
         size_t next_line = raw_content.find('\n', pos);

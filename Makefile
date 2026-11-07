@@ -1,7 +1,6 @@
-CXX = g++
+# Works with mingw32-make / GNU make on Windows (MinGW-w64) and on Linux/macOS (CLI only).
+CXX      = g++
 CXXFLAGS = -std=c++17 -O3 -Wall -Iinclude
-LDFLAGS = -static -static-libgcc -static-libstdc++ -lws2_32
-TARGET = bin/genomix.exe
 
 SRCS = cpp_src/z_algorithm.cpp \
        cpp_src/fasta_parser.cpp \
@@ -14,11 +13,25 @@ SRCS = cpp_src/z_algorithm.cpp \
        cpp_src/web_server.cpp \
        cpp_src/main.cpp
 
+ifeq ($(OS),Windows_NT)
+  TARGET  = bin/genomix.exe
+  LDFLAGS = -static -static-libgcc -static-libstdc++ -lws2_32 -pthread
+  MKBIN   = @if not exist bin mkdir bin
+  RM_CMD  = @if exist bin\genomix.exe del /Q bin\genomix.exe
+else
+  # web_server.cpp uses WinSock, so the Linux/macOS build swaps in a stub (Web UI is Windows-only).
+  TARGET  = bin/genomix
+  SRCS   := $(filter-out cpp_src/web_server.cpp,$(SRCS)) cpp_src/web_server_stub.cpp
+  LDFLAGS = -pthread
+  MKBIN   = @mkdir -p bin
+  RM_CMD  = @rm -f bin/genomix
+endif
+
 all: $(TARGET)
 
 $(TARGET): $(SRCS)
-	@if not exist bin mkdir bin
+	$(MKBIN)
 	$(CXX) $(CXXFLAGS) $(SRCS) $(LDFLAGS) -o $(TARGET)
 
 clean:
-	@if exist bin\genomix.exe del /Q bin\genomix.exe
+	$(RM_CMD)

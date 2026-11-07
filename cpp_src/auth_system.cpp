@@ -7,6 +7,17 @@
 #include <algorithm>
 #include <cstring>
 #include <filesystem>
+#include <mutex>
+
+namespace {
+std::mutex g_auth_mutex;   // request threads share users/logs
+
+// Fields are stored tab-separated, one record per line: strip characters that would corrupt the file.
+std::string cleanField(std::string v) {
+    for (char& c : v) if (c == '\t' || c == '\n' || c == '\r') c = ' ';
+    return v;
+}
+}
 
 namespace genomix {
 
@@ -159,9 +170,11 @@ void AuthSystem::loadData() {
                 std::getline(ss, inst, '\t') &&
                 std::getline(ss, created, '\t') &&
                 std::getline(ss, last_l)) {
-                users.push_back({
-                    std::stoi(id_s), user, email, hash, name, inst, created, last_l
-                });
+                try {
+                    users.push_back({
+                        std::stoi(id_s), user, email, hash, name, inst, created, last_l
+                    });
+                } catch (...) { /* skip corrupt line */ }
             }
         }
         uf.close();
@@ -189,19 +202,21 @@ void AuthSystem::loadData() {
                 std::getline(ss, risk, '\t') &&
                 std::getline(ss, conf_s, '\t') &&
                 std::getline(ss, created)) {
-                logs.push_back({
-                    std::stoi(id_s),
-                    std::stoi(uid_s),
-                    sample, disease, motif,
-                    static_cast<size_t>(std::stoull(len_s)),
-                    static_cast<size_t>(std::stoull(rep_s)),
-                    static_cast<size_t>(std::stoull(hits_s)),
-                    static_cast<uint64_t>(std::stoull(comps_s)),
-                    static_cast<uint64_t>(std::stoull(saved_s)),
-                    pred, risk,
-                    std::stod(conf_s),
-                    created
-                });
+                try {
+                    logs.push_back({
+                        std::stoi(id_s),
+                        std::stoi(uid_s),
+                        sample, disease, motif,
+                        static_cast<size_t>(std::stoull(len_s)),
+                        static_cast<size_t>(std::stoull(rep_s)),
+                        static_cast<size_t>(std::stoull(hits_s)),
+                        static_cast<uint64_t>(std::stoull(comps_s)),
+                        static_cast<uint64_t>(std::stoull(saved_s)),
+                        pred, risk,
+                        std::stod(conf_s),
+                        created
+                    });
+                } catch (...) { /* skip corrupt line */ }
             }
         }
         lf.close();
@@ -238,6 +253,7 @@ std::pair<bool, std::string> AuthSystem::registerUser(
     const std::string& full_name,
     const std::string& institution
 ) {
+    std::lock_guard<std::mutex> lock(g_auth_mutex);
     if (username.empty() || email.empty() || password.empty() || full_name.empty()) {
         return {false, "All required fields must be populated."};
     }
@@ -267,11 +283,11 @@ std::pair<bool, std::string> AuthSystem::registerUser(
 
     users.push_back({
         next_id,
-        username,
-        email,
+        cleanField(username),
+        cleanField(email),
         hash,
-        full_name,
-        institution,
+        cleanField(full_name),
+        cleanField(institution),
         now_ts,
         now_ts
     });
@@ -284,6 +300,7 @@ std::optional<UserProfile> AuthSystem::authenticate(
     const std::string& username_or_email,
     const std::string& password
 ) {
+    std::lock_guard<std::mutex> lock(g_auth_mutex);
     std::string lower_id = username_or_email;
     std::transform(lower_id.begin(), lower_id.end(), lower_id.begin(), ::tolower);
     std::string hash = sha256(password);
@@ -304,7 +321,9 @@ std::optional<UserProfile> AuthSystem::authenticate(
 }
 
 void AuthSystem::recordAnalysis(int user_id, const AnalysisLog& log) {
+    std::lock_guard<std::mutex> lock(g_auth_mutex);
     AnalysisLog entry = log;
+    entry.sample_name = cleanField(entry.sample_name);
     entry.id = logs.empty() ? 1 : (logs.back().id + 1);
     entry.user_id = user_id;
     entry.created_at = getCurrentTimestamp();
@@ -313,6 +332,7 @@ void AuthSystem::recordAnalysis(int user_id, const AnalysisLog& log) {
 }
 
 std::vector<AnalysisLog> AuthSystem::getUserAnalyses(int user_id) {
+    std::lock_guard<std::mutex> lock(g_auth_mutex);
     std::vector<AnalysisLog> res;
     for (const auto& l : logs) {
         if (l.user_id == user_id) {
@@ -324,6 +344,7 @@ std::vector<AnalysisLog> AuthSystem::getUserAnalyses(int user_id) {
 }
 
 std::vector<UserProfile> AuthSystem::getAllUsers() {
+    std::lock_guard<std::mutex> lock(g_auth_mutex);
     return users;
 }
 

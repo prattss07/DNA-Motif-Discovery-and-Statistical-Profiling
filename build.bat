@@ -24,7 +24,7 @@ echo Compiling C++ modules (statically linked for maximum portability)...
     cpp_src/web_server.cpp ^
     cpp_src/main.cpp ^
     -static -static-libgcc -static-libstdc++ ^
-    -lws2_32 ^
+    -lws2_32 -pthread ^
     -o bin/genomix.exe
 
 if %ERRORLEVEL% equ 0 (

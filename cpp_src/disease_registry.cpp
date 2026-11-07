@@ -87,23 +87,66 @@ const DiseaseInfo& DiseaseRegistry::getDisease(const std::string& key) {
     return REGISTRY_DATA.at("Huntington_Disease");
 }
 
-std::string DiseaseRegistry::detectDiseaseKey(const std::string& text) {
-    std::string lower_text = text;
-    std::transform(lower_text.begin(), lower_text.end(), lower_text.begin(), ::tolower);
+namespace {
+// Returns the key if the text clearly names a disease/gene/accession, else "".
+std::string matchHint(const std::string& text) {
+    std::string t = text;
+    std::transform(t.begin(), t.end(), t.begin(), [](unsigned char c) { return static_cast<char>(::tolower(c)); });
+    auto has = [&](const char* w) { return t.find(w) != std::string::npos; };
 
-    if (lower_text.find("fragile") != std::string::npos || lower_text.find("fmr1") != std::string::npos) {
-        return "Fragile_X_Syndrome";
+    if (has("fragile") || has("fmr1") || has("fraxa")) return "Fragile_X_Syndrome";
+    if (has("friedreich") || has("fxn") || has("frda") || has("frataxin")) return "Friedreich_Ataxia";
+    if (has("dmpk") || has("myotonic") || has("dm1")) return "Myotonic_Dystrophy_Type_1";
+    if (has("atxn1") || has("sca1") || has("spinocerebellar") || has("ataxin")) return "Spinocerebellar_Ataxia_Type_1";
+    // "htt" must not match the start of "http"/"https" in FASTA headers.
+    bool htt_gene = false;
+    for (size_t p = t.find("htt"); p != std::string::npos; p = t.find("htt", p + 1)) {
+        if (p + 3 >= t.size() || t[p + 3] != 'p') { htt_gene = true; break; }
     }
-    if (lower_text.find("friedreich") != std::string::npos || lower_text.find("fxn") != std::string::npos || lower_text.find("frda") != std::string::npos) {
-        return "Friedreich_Ataxia";
+    if (has("huntington") || htt_gene || has("huntingtin")) return "Huntington_Disease";
+
+    // NCBI accession (version ignored), e.g. "NM_002024.6.fasta" or "NM_002024"
+    for (const auto& kv : REGISTRY_DATA) {
+        for (const auto& acc : kv.second.ncbi_accessions) {
+            std::string base = acc.substr(0, acc.find('.'));
+            std::transform(base.begin(), base.end(), base.begin(), [](unsigned char c) { return static_cast<char>(::tolower(c)); });
+            if (!base.empty() && t.find(base) != std::string::npos) return kv.first;
+        }
     }
-    if (lower_text.find("dmpk") != std::string::npos || lower_text.find("myotonic") != std::string::npos) {
-        return "Myotonic_Dystrophy_Type_1";
+    return "";
+}
+
+size_t longestTandemRun(const std::string& seq, const std::string& motif) {
+    size_t best = 0, m = motif.size();
+    if (m == 0 || seq.size() < m) return 0;
+    for (size_t frame = 0; frame < m; ++frame) {
+        size_t run = 0;
+        for (size_t i = frame; i + m <= seq.size(); i += m) {
+            if (seq.compare(i, m, motif) == 0) { if (++run > best) best = run; }
+            else run = 0;
+        }
     }
-    if (lower_text.find("atxn1") != std::string::npos || lower_text.find("sca1") != std::string::npos) {
-        return "Spinocerebellar_Ataxia_Type_1";
+    return best;
+}
+} // namespace
+
+std::string DiseaseRegistry::detectDiseaseKey(const std::string& text) {
+    std::string k = matchHint(text);
+    return k.empty() ? "Huntington_Disease" : k;
+}
+
+std::string DiseaseRegistry::detectDiseaseKeyForSequence(const std::string& filename, const std::string& header, const std::string& sequence) {
+    std::string k = matchHint(filename);
+    if (k.empty()) k = matchHint(header);
+    if (!k.empty()) return k;
+
+    std::string best_key = "Huntington_Disease";
+    size_t best_run = longestTandemRun(sequence, REGISTRY_DATA.at(best_key).motif);
+    for (const auto& kv : REGISTRY_DATA) {
+        size_t run = longestTandemRun(sequence, kv.second.motif);
+        if (run > best_run) { best_run = run; best_key = kv.first; }
     }
-    return "Huntington_Disease";
+    return best_key;
 }
 
 } // namespace genomix

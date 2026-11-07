@@ -3,6 +3,7 @@
 #include <vector>
 #include <filesystem>
 #include <iomanip>
+#include <limits>
 #include "z_algorithm.hpp"
 #include "fasta_parser.hpp"
 #include "tandem_analyzer.hpp"
@@ -50,11 +51,10 @@ void runBenchmark(const std::string& data_dir) {
 
     for (const auto& fpath : fasta_files) {
         std::string fname = std::filesystem::path(fpath).filename().string();
-        std::string d_key = DiseaseRegistry::detectDiseaseKey(fname);
-        const auto& disease = DiseaseRegistry::getDisease(d_key);
-
         FastaRecord rec = FastaParser::readFile(fpath);
         if (!rec.success) continue;
+        std::string d_key = DiseaseRegistry::detectDiseaseKeyForSequence(fname, rec.header, rec.sequence);
+        const auto& disease = DiseaseRegistry::getDisease(d_key);
 
         ZSearchResult z_res = ZAlgorithm::search(disease.motif, rec.sequence);
         TandemAnalysisResult tandem = TandemAnalyzer::analyze(z_res.match_indices, disease.motif.length());
@@ -76,12 +76,10 @@ void runBenchmark(const std::string& data_dir) {
     std::cout << std::string(115, '=') << "\n\n";
 }
 
+static int g_current_user_id = 1;   // set after a successful CLI sign-in
+
 void analyzeSingle(const std::string& input, bool is_file, const std::string& disease_key, const std::string& data_dir) {
-    std::string d_key = disease_key;
-    if (d_key.empty()) {
-        d_key = DiseaseRegistry::detectDiseaseKey(input);
-    }
-    const auto& disease = DiseaseRegistry::getDisease(d_key);
+    (void)data_dir;
 
     FastaRecord rec;
     std::string specimen_name;
@@ -94,9 +92,20 @@ void analyzeSingle(const std::string& input, bool is_file, const std::string& di
     }
 
     if (!rec.success) {
-        std::cerr << "[ERROR] " << rec.error_message << std::endl;
+        std::cerr << "[ERROR] " << (rec.error_message.empty() ? std::string("No DNA bases found in the input.") : rec.error_message) << std::endl;
         return;
     }
+
+    std::string d_key = disease_key;
+    if (d_key.empty() || d_key == "auto") {
+        d_key = DiseaseRegistry::detectDiseaseKeyForSequence(is_file ? specimen_name : std::string(), rec.header, rec.sequence);
+        std::cout << "[INFO] Auto-detected panel: " << DiseaseRegistry::getDisease(d_key).display_name << "\n";
+    } else if (!DiseaseRegistry::hasDisease(d_key)) {
+        std::cerr << "[ERROR] Unknown disease panel '" << d_key << "'. Valid panels:\n";
+        for (const auto& kv : DiseaseRegistry::getAllDiseases()) std::cerr << "   " << kv.first << "\n";
+        return;
+    }
+    const auto& disease = DiseaseRegistry::getDisease(d_key);
 
     ZSearchResult z_res = ZAlgorithm::search(disease.motif, rec.sequence);
     TandemAnalysisResult tandem = TandemAnalyzer::analyze(z_res.match_indices, disease.motif.length());
@@ -116,6 +125,43 @@ void analyzeSingle(const std::string& input, bool is_file, const std::string& di
     );
 
     std::cout << report << std::endl;
+
+    AnalysisLog entry{};
+    entry.sample_name = specimen_name;
+    entry.disease = disease.key;
+    entry.target_motif = disease.motif;
+    entry.seq_length = rec.sequence.length();
+    entry.max_repeats = tandem.max_repeat_count;
+    entry.total_matches = z_res.total_occurrences;
+    entry.z_comparisons = z_res.z_comparisons;
+    entry.comparisons_saved = z_res.comparisons_saved;
+    entry.prediction_label = cls.predicted_label;
+    entry.risk_level = cls.risk_level;
+    entry.confidence_pct = cls.confidence_pct;
+    AuthSystem::recordAnalysis(g_current_user_id, entry);
+}
+
+// Reads a pasted sequence (raw bases or FASTA, any number of lines).
+// Finish with an empty line, a line containing END, or Ctrl+Z / Ctrl+D.
+std::string readPastedSequence() {
+    std::string all, line;
+    while (std::getline(std::cin, line)) {
+        std::string t = line;
+        while (!t.empty() && (t.back() == '\r' || t.back() == ' ' || t.back() == '\t')) t.pop_back();
+        if (t == "END" || t == "end") break;
+        if (t.empty()) { if (all.empty()) continue; else break; }
+        all += t + "\n";
+    }
+    if (std::cin.eof()) std::cin.clear();
+    return all;
+}
+
+std::string trimQuotes(std::string s) {
+    while (!s.empty() && (s.back() == '\r' || s.back() == ' ' || s.back() == '\t')) s.pop_back();
+    size_t start = s.find_first_not_of(" \t");
+    s = (start == std::string::npos) ? "" : s.substr(start);
+    if (s.size() >= 2 && ((s.front() == '"' && s.back() == '"') || (s.front() == '\'' && s.back() == '\''))) s = s.substr(1, s.size() - 2);
+    return s;
 }
 
 void printHelp() {
@@ -130,9 +176,13 @@ void printHelp() {
 
 int main(int argc, char* argv[]) {
     // Resolve project directories relative to executable or current working directory
+    // Works from the project folder, from inside bin\, or wherever the exe lives (folder may be moved/renamed).
     std::string base_dir = ".";
-    if (std::filesystem::exists("D:/PACKAGES/SEM5/DAA")) {
-        base_dir = "D:/PACKAGES/SEM5/DAA";
+    if (!std::filesystem::exists("./data")) {
+        std::error_code ec;
+        std::filesystem::path exe_root = std::filesystem::absolute(argv[0], ec).parent_path().parent_path();
+        if (!ec && std::filesystem::exists(exe_root / "data")) base_dir = exe_root.string();
+        else if (std::filesystem::exists("../data")) base_dir = "..";
     }
 
     std::string data_dir = base_dir + "/data";
@@ -145,7 +195,11 @@ int main(int argc, char* argv[]) {
         std::string arg1 = argv[1];
         if (arg1 == "--web") {
             int port = 8080;
-            if (argc > 2) port = std::stoi(argv[2]);
+            if (argc > 2) {
+                try { port = std::stoi(argv[2]); }
+                catch (...) { std::cerr << "[ERROR] Invalid port '" << argv[2] << "'. Using 8080.\n"; }
+                if (port < 1 || port > 65535) { std::cerr << "[ERROR] Port out of range. Using 8080.\n"; port = 8080; }
+            }
             WebServer::start(port, web_dir, data_dir);
             return 0;
         } else if (arg1 == "--benchmark") {
@@ -193,6 +247,8 @@ int main(int argc, char* argv[]) {
             continue;
         }
 
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
         if (choice == 0) {
             std::cout << "Exiting GenomiX. Goodbye.\n";
             break;
@@ -203,22 +259,24 @@ int main(int argc, char* argv[]) {
         } else if (choice == 3) {
             std::cout << "Enter path to FASTA file: ";
             std::string fpath;
-            std::cin >> fpath;
+            std::getline(std::cin, fpath);
+            fpath = trimQuotes(fpath);
             std::cout << "Enter Disease Panel (or press Enter for auto-detect): ";
             std::string d_key;
-            std::cin.ignore();
             std::getline(std::cin, d_key);
-            analyzeSingle(fpath, true, d_key, data_dir);
+            analyzeSingle(fpath, true, trimQuotes(d_key), data_dir);
         } else if (choice == 4) {
-            std::cout << "Paste DNA Sequence: ";
-            std::string seq;
-            std::cin >> seq;
-            std::cout << "Enter Disease Panel (e.g. Huntington_Disease, Fragile_X_Syndrome): ";
-            std::string d_key;
-            std::cin.ignore();
-            std::getline(std::cin, d_key);
-            if (d_key.empty()) d_key = "Huntington_Disease";
-            analyzeSingle(seq, false, d_key, data_dir);
+            std::cout << "\nPaste your DNA sequence (raw bases or FASTA, multiple lines are fine).\n";
+            std::cout << "When finished, press Enter on an empty line (or type END):\n";
+            std::string seq = readPastedSequence();
+            if (seq.empty()) {
+                std::cout << "[ERROR] Nothing was pasted.\n";
+            } else {
+                std::cout << "Enter Disease Panel (e.g. Huntington_Disease, Fragile_X_Syndrome) or press Enter for auto-detect: ";
+                std::string d_key;
+                std::getline(std::cin, d_key);
+                analyzeSingle(seq, false, trimQuotes(d_key), data_dir);
+            }
         } else if (choice == 5) {
             std::cout << "\nACMG Clinical Thresholds Registry:\n";
             for (const auto& [k, d] : DiseaseRegistry::getAllDiseases()) {
@@ -230,7 +288,7 @@ int main(int argc, char* argv[]) {
         } else if (choice == 6) {
             std::cout << "1. Sign In\n2. Create Account\nChoice: ";
             int auth_choice = 1;
-            std::cin >> auth_choice;
+            if (!(std::cin >> auth_choice)) { std::cin.clear(); std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); continue; }
             if (auth_choice == 1) {
                 std::string u, p;
                 std::cout << "Username/Email: ";
@@ -239,13 +297,15 @@ int main(int argc, char* argv[]) {
                 std::cin >> p;
                 auto user = AuthSystem::authenticate(u, p);
                 if (user.has_value()) {
+                    g_current_user_id = user->id;
                     std::cout << "[SUCCESS] Welcome, " << user->full_name << " (" << user->institution << ")\n";
                 } else {
                     std::cout << "[ERROR] Invalid credentials.\n";
                 }
             } else {
                 std::string u, email, pass, name, inst;
-                std::cout << "Full Name: "; std::cin.ignore(); std::getline(std::cin, name);
+                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                std::cout << "Full Name: "; std::getline(std::cin, name);
                 std::cout << "Institution: "; std::getline(std::cin, inst);
                 std::cout << "Username: "; std::cin >> u;
                 std::cout << "Email: "; std::cin >> email;
@@ -255,7 +315,7 @@ int main(int argc, char* argv[]) {
             }
         } else if (choice == 7) {
             std::cout << "\nRecent Diagnostic Audit Logs:\n";
-            auto logs = AuthSystem::getUserAnalyses(1); // default user
+            auto logs = AuthSystem::getUserAnalyses(g_current_user_id);
             if (logs.empty()) {
                 std::cout << "  No audit logs recorded yet.\n";
             } else {

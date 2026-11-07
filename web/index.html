@@ -152,6 +152,16 @@
         background-color: var(--accent-hover);
     }
 
+    .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+    .btn-row .btn-primary { width: auto; flex: 1 1 220px; }
+    .btn-row .btn-outline { flex: 0 0 auto; }
+    .seq-box { font-family: Consolas, "Courier New", monospace; font-size: 0.85rem; letter-spacing: 0.04em; line-height: 1.5; min-height: 170px; resize: vertical; }
+    .seq-stats { margin-top: 6px; font-size: 0.82rem; color: var(--text-secondary); min-height: 1.2em; }
+    .seq-stats.warn { color: var(--warning); }
+    .text-report { white-space: pre; overflow-x: auto; font-family: Consolas, "Courier New", monospace; font-size: 0.78rem; line-height: 1.45; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 6px; padding: 12px; margin-top: 10px; color: var(--text-primary); }
+    details.full-report { margin-top: 16px; }
+    details.full-report summary { cursor: pointer; font-weight: 600; font-size: 0.9rem; color: var(--accent); }
+
     .btn-outline {
         background: none;
         border: 1px solid var(--border-color);
@@ -336,6 +346,7 @@
     <div id="dashboardSection" class="hidden">
         <div class="nav-tabs">
             <button class="tab-btn active" onclick="switchMainTab('scanner')">Sequence Scanner</button>
+            <button class="tab-btn" onclick="switchMainTab('paste')">Paste Sequence</button>
             <button class="tab-btn" onclick="switchMainTab('history')">Analysis History</button>
             <button class="tab-btn" onclick="switchMainTab('cohort')">NCBI Reference Cohort</button>
         </div>
@@ -347,6 +358,7 @@
                     <div class="form-group">
                         <label>Target Condition Panel</label>
                         <select id="diseaseSelect" onchange="updateDiseaseInfo()">
+                            <option value="auto" selected>Auto-detect from specimen (recommended)</option>
                             <option value="Huntington_Disease">Huntington's Disease (HTT Gene - CAG Motif)</option>
                             <option value="Fragile_X_Syndrome">Fragile X Syndrome (FMR1 Gene - CGG Motif)</option>
                             <option value="Friedreich_Ataxia">Friedreich's Ataxia (FXN Gene - GAA Motif)</option>
@@ -375,38 +387,38 @@
 
                 <button class="btn btn-primary" style="margin-top: 8px;" onclick="runAnalysis()">Run Diagnostic Analysis</button>
             </div>
+        </div>
 
-            <!-- RESULT CARD -->
-            <div id="reportContainer" class="hidden">
-                <div class="card">
-                    <div style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-secondary); font-weight: 600;">Molecular Genetics Pathology Report</div>
-                    <div id="reportBadge" class="status-badge" style="margin-top: 8px;"></div>
+        <!-- TAB: PASTE SEQUENCE -->
+        <div id="pasteTab" class="hidden">
+            <div class="card">
+                <h3>Paste a DNA Sequence</h3>
+                <div class="subtitle" style="margin-bottom: 16px;">Paste raw bases or a FASTA record (with a &gt; header). Multi-line input is fine.</div>
 
-                    <div class="report-item"><b>Specimen Identifier:</b> <span id="repSpecimen"></span></div>
-                    <div class="report-item"><b>Condition & Gene:</b> <span id="repCondition"></span></div>
-                    <div class="report-item"><b>Target Motif:</b> <span id="repMotif"></span></div>
-                    <div class="report-item"><b>Tandem Repeat Locus:</b> <span id="repLocus"></span></div>
-                    <div class="report-item"><b>Machine Learning Prediction:</b> <span id="repML"></span></div>
-                    <div class="report-item"><b>Clinical Recommendation:</b> <span id="repRec"></span></div>
+                <div class="form-group">
+                    <label>Target Condition Panel</label>
+                    <select id="pasteDisease">
+                        <option value="auto" selected>Auto-detect from sequence (recommended)</option>
+                        <option value="Huntington_Disease">Huntington's Disease (HTT Gene - CAG Motif)</option>
+                        <option value="Fragile_X_Syndrome">Fragile X Syndrome (FMR1 Gene - CGG Motif)</option>
+                        <option value="Friedreich_Ataxia">Friedreich's Ataxia (FXN Gene - GAA Motif)</option>
+                        <option value="Myotonic_Dystrophy_Type_1">Myotonic Dystrophy Type 1 (DMPK Gene - CTG Motif)</option>
+                        <option value="Spinocerebellar_Ataxia_Type_1">Spinocerebellar Ataxia 1 (ATXN1 Gene - CAG Motif)</option>
+                    </select>
+                </div>
 
-                    <div class="grid-4">
-                        <div class="metric-card">
-                            <div class="metric-label">Sequence Length</div>
-                            <div class="metric-value" id="metLen">-</div>
-                        </div>
-                        <div class="metric-card">
-                            <div class="metric-label">Max Repeat Count</div>
-                            <div class="metric-value" id="metRepeats">-</div>
-                        </div>
-                        <div class="metric-card">
-                            <div class="metric-label">Total Motif Matches</div>
-                            <div class="metric-value" id="metMatches">-</div>
-                        </div>
-                        <div class="metric-card">
-                            <div class="metric-label">Model Confidence</div>
-                            <div class="metric-value" id="metConf">-</div>
-                        </div>
-                    </div>
+                <div class="form-group">
+                    <label>Nucleotide Sequence</label>
+                    <textarea id="pasteInput" class="seq-box" spellcheck="false" autocomplete="off"
+                        oninput="updatePasteStats()"
+                        placeholder="&gt;optional_header&#10;ATGGCGACCCTGGAAAAGCTGATGAAGGCCTTCGAGTCCCTCAAGTCCTTCCAGCAGCAGCAGCAGCAG..."></textarea>
+                    <div id="pasteStats" class="seq-stats">Waiting for sequence...</div>
+                </div>
+
+                <div class="btn-row">
+                    <button id="pasteRunBtn" class="btn btn-primary" onclick="runPasteAnalysis()">Analyze &amp; Show Report</button>
+                    <button class="btn btn-outline" onclick="loadPasteExample()">Load synthetic example</button>
+                    <button class="btn btn-outline" onclick="clearPaste()">Clear</button>
                 </div>
             </div>
         </div>
@@ -460,6 +472,51 @@
             </div>
         </div>
 
+        <!-- SHARED REPORT (used by Sequence Scanner and Paste Sequence) -->
+            <!-- RESULT CARD -->
+            <div id="reportContainer" class="hidden">
+                <div class="card">
+                    <div style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-secondary); font-weight: 600;">Molecular Genetics Pathology Report</div>
+                    <div id="reportBadge" class="status-badge" style="margin-top: 8px;"></div>
+
+                    <div class="report-item"><b>Specimen Identifier:</b> <span id="repSpecimen"></span></div>
+                    <div class="report-item"><b>Condition & Gene:</b> <span id="repCondition"></span></div>
+                    <div class="report-item"><b>Target Motif:</b> <span id="repMotif"></span></div>
+                    <div class="report-item"><b>Tandem Repeat Locus:</b> <span id="repLocus"></span></div>
+                    <div class="report-item"><b>Machine Learning Prediction:</b> <span id="repML"></span></div>
+                    <div class="report-item"><b>Clinical Recommendation:</b> <span id="repRec"></span></div>
+
+
+                    <div class="grid-4">
+                        <div class="metric-card">
+                            <div class="metric-label">Sequence Length</div>
+                            <div class="metric-value" id="metLen">-</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-label">Max Repeat Count</div>
+                            <div class="metric-value" id="metRepeats">-</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-label">Total Motif Matches</div>
+                            <div class="metric-value" id="metMatches">-</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-label">Model Confidence</div>
+                            <div class="metric-value" id="metConf">-</div>
+                        </div>
+                    </div>
+
+                    <details class="full-report" open>
+                        <summary>Full text report</summary>
+                        <div class="btn-row">
+                            <button class="btn btn-outline" onclick="copyReport()">Copy report</button>
+                            <button class="btn btn-outline" onclick="downloadReport()">Download .txt</button>
+                        </div>
+                        <div id="repText" class="text-report"></div>
+                    </details>
+                </div>
+            </div>
+
     </div>
 </div>
 
@@ -480,23 +537,13 @@
     }
 
     function switchMainTab(tab) {
-        document.querySelectorAll('#dashboardSection .tab-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById('scannerTab').classList.add('hidden');
-        document.getElementById('historyTab').classList.add('hidden');
-        document.getElementById('cohortTab').classList.add('hidden');
-
-        if (tab === 'scanner') {
-            document.querySelectorAll('#dashboardSection .tab-btn')[0].classList.add('active');
-            document.getElementById('scannerTab').classList.remove('hidden');
-        } else if (tab === 'history') {
-            document.querySelectorAll('#dashboardSection .tab-btn')[1].classList.add('active');
-            document.getElementById('historyTab').classList.remove('hidden');
-            loadHistory();
-        } else {
-            document.querySelectorAll('#dashboardSection .tab-btn')[2].classList.add('active');
-            document.getElementById('cohortTab').classList.remove('hidden');
-            loadCohort();
-        }
+        const order = ['scanner', 'paste', 'history', 'cohort'];
+        document.querySelectorAll('#dashboardSection .tab-btn').forEach((b, i) => b.classList.toggle('active', order[i] === tab));
+        order.forEach(t => document.getElementById(t + 'Tab').classList.toggle('hidden', t !== tab));
+        // The report belongs to the two analysis tabs only
+        if (tab === 'history' || tab === 'cohort') document.getElementById('reportContainer').classList.add('hidden');
+        if (tab === 'history') loadHistory();
+        if (tab === 'cohort') loadCohort();
     }
 
     function toggleInputMode() {
@@ -580,6 +627,12 @@
         document.getElementById('authSection').classList.remove('hidden');
     }
 
+    // Called when the condition panel changes: clear a stale report so it is not mistaken for the new selection.
+    function updateDiseaseInfo() {
+        const rc = document.getElementById('reportContainer');
+        if (rc) rc.classList.add('hidden');
+    }
+
     async function loadFiles() {
         try {
             const res = await fetch('/api/files');
@@ -595,6 +648,9 @@
         } catch (e) {}
     }
 
+    let lastTextReport = '';
+    let lastReportName = 'genomix_report';
+
     async function runAnalysis() {
         const disease = document.getElementById('diseaseSelect').value;
         const mode = document.getElementById('inputModeSelect').value;
@@ -609,7 +665,10 @@
                 return;
             }
         }
+        await submitAnalysis(disease, mode, payload);
+    }
 
+    async function submitAnalysis(disease, mode, payload) {
         try {
             const res = await fetch('/api/analyze', {
                 method: 'POST',
@@ -623,16 +682,84 @@
             });
             const resp = await res.json();
             if (resp.success) {
-                displayReport(resp.data);
-            } else {
-                alert(resp.message || 'Analysis error');
+                displayReport(resp.data, resp.text_report || '');
+                document.getElementById('reportContainer').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                return true;
             }
+            alert(resp.message || 'Analysis error');
         } catch (e) {
             alert('Server error occurred.');
         }
+        return false;
     }
 
-    function displayReport(data) {
+    // ---- Paste Sequence tab ----
+    function parsePasted(text) {
+        const bases = text.split(/\r?\n/).filter(l => !l.trim().startsWith('>')).join('').replace(/[^A-Za-z]/g, '').toUpperCase();
+        let gc = 0, invalid = 0;
+        for (const c of bases) {
+            if (c === 'G' || c === 'C') gc++;
+            if (!'ACGTN'.includes(c)) invalid++;
+        }
+        return { length: bases.length, gc: gc, invalid: invalid };
+    }
+
+    function updatePasteStats() {
+        const el = document.getElementById('pasteStats');
+        const text = document.getElementById('pasteInput').value;
+        if (!text.trim()) { el.textContent = 'Waiting for sequence...'; el.className = 'seq-stats'; return; }
+        const p = parsePasted(text);
+        let msg = `${p.length.toLocaleString()} bases`;
+        if (p.length) msg += ` · GC ${(100 * p.gc / p.length).toFixed(1)}%`;
+        if (p.invalid) { msg += ` · ${p.invalid} non-ACGTN letters (check the input)`; el.className = 'seq-stats warn'; }
+        else el.className = 'seq-stats';
+        el.textContent = msg;
+    }
+
+    async function runPasteAnalysis() {
+        const text = document.getElementById('pasteInput').value.trim();
+        const stats = document.getElementById('pasteStats');
+        if (!text) { stats.textContent = 'Paste a sequence first.'; stats.className = 'seq-stats warn'; return; }
+        if (parsePasted(text).length < 3) { stats.textContent = 'Sequence is too short to analyze.'; stats.className = 'seq-stats warn'; return; }
+        const btn = document.getElementById('pasteRunBtn');
+        btn.disabled = true; btn.textContent = 'Analyzing...';
+        await submitAnalysis(document.getElementById('pasteDisease').value, 'dna', text);
+        btn.disabled = false; btn.textContent = 'Analyze & Show Report';
+    }
+
+    function loadPasteExample() {
+        // Synthetic demo (not a patient or NCBI record): HTT-style exon 1 flanks around 42 CAG repeats
+        const seq = 'ATGGCGACCCTGGAAAAGCTGATGAAGGCCTTCGAGTCCCTCAAGTCCTTC' + 'CAG'.repeat(42) + 'CAACAGCCGCCACCGCCGCCGCCGCCGCCGCCTCCTCAGCTTCCTCAGCCGCCGCCGCAGGCACAGCCGCTGCTGCCT';
+        const lines = seq.match(/.{1,60}/g).join('\n');
+        document.getElementById('pasteInput').value = '>synthetic_example_42_CAG\n' + lines;
+        document.getElementById('pasteDisease').value = 'auto';
+        updatePasteStats();
+    }
+
+    function clearPaste() {
+        document.getElementById('pasteInput').value = '';
+        updatePasteStats();
+        document.getElementById('reportContainer').classList.add('hidden');
+    }
+
+    async function copyReport() {
+        try { await navigator.clipboard.writeText(lastTextReport); }
+        catch (e) {
+            const ta = document.createElement('textarea'); ta.value = lastTextReport; document.body.appendChild(ta);
+            ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+        }
+    }
+
+    function downloadReport() {
+        const blob = new Blob([lastTextReport], { type: 'text/plain;charset=utf-8' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = lastReportName.replace(/[^A-Za-z0-9_.-]+/g, '_') + '_report.txt';
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    }
+
+    function displayReport(data, textReport) {
         document.getElementById('reportContainer').classList.remove('hidden');
 
         const badge = document.getElementById('reportBadge');
@@ -647,7 +774,7 @@
         }
 
         document.getElementById('repSpecimen').textContent = `${data.specimen} (${data.sequence_length_bp.toLocaleString()} bp)`;
-        document.getElementById('repCondition').textContent = `${data.disease.replace('_', ' ')} (${data.gene} Gene - Chromosome ${data.chromosome})`;
+        document.getElementById('repCondition').textContent = `${data.disease.replace(/_/g, ' ')} (${data.gene} Gene - Chromosome ${data.chromosome})`;
         document.getElementById('repMotif').textContent = `5'-${data.motif}-3' (${data.total_motif_matches} total occurrences)`;
         document.getElementById('repLocus').textContent = `${data.max_consecutive_repeats} Consecutive Repeats (Loci [${data.locus_start} : ${data.locus_end}])`;
         document.getElementById('repML').textContent = `${data.predicted_label} (${data.confidence_pct.toFixed(1)}% Confidence)`;
@@ -657,6 +784,10 @@
         document.getElementById('metRepeats').textContent = data.max_consecutive_repeats + ' reps';
         document.getElementById('metMatches').textContent = data.total_motif_matches;
         document.getElementById('metConf').textContent = data.confidence_pct.toFixed(1) + '%';
+
+        lastTextReport = textReport || '';
+        lastReportName = (data.specimen || 'genomix').replace(/\.(fasta|fa)$/i, '');
+        document.getElementById('repText').textContent = lastTextReport;
     }
 
     async function loadHistory() {
@@ -670,7 +801,7 @@
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td><code>${h.sample_name}</code></td>
-                    <td>${h.disease.replace('_', ' ')}</td>
+                    <td>${h.disease.replace(/_/g, ' ')}</td>
                     <td><code>${h.motif}</code></td>
                     <td>${h.seq_length.toLocaleString()} bp</td>
                     <td><b>${h.max_repeats}</b></td>
