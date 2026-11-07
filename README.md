@@ -122,52 +122,7 @@ D:\PACKAGES\SEM5\DAA\
 
 ---
 
-## 🚀 Building & Running the C++ Application
 
-### 1. Build the Binary
-Using the provided `build.bat` script:
-```powershell
-d:
-cd \PACKAGES\SEM5\DAA
-.\build.bat
-```
-*(Or with make: `make`)*
-
-This produces `bin\genomix.exe`, a standalone, statically linked binary.
-
----
-
-### 2. Launch the Interactive Web Dashboard
-Run:
-```powershell
-.\bin\genomix.exe --web 8080
-```
-Open **`http://localhost:8080`** in any web browser.
-* **Sign In** (Default account: `prattss07` / `SecurePass123!`) or **Create Account**.
-* Select a disease panel, choose an NCBI clone or paste a DNA string, and click **"Run Diagnostic Analysis"**.
-* View your user activity and past runs in the **Analysis History** tab.
-
----
-
-### 3. Run in Command-Line Mode (CLI)
-
-#### Batch Benchmark Across All NCBI GenBank Clones:
-```powershell
-.\bin\genomix.exe --benchmark
-```
-
-#### Screen a Local FASTA File:
-```powershell
-.\bin\genomix.exe --file data/KJ535072_Huntington_Disease.fasta Huntington_Disease
-```
-
-#### Analyze a Raw DNA Nucleotide String:
-```powershell
-.\bin\genomix.exe --dna "ATGGCGACCCTGGAAAAGTCCTTCCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAACAGCCG" Huntington_Disease
-```
-
-#### Interactive Terminal Menu:
-```powershell
 .\bin\genomix.exe
 ```
 
