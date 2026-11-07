@@ -120,7 +120,6 @@ D:\PACKAGES\SEM5\DAA\
 └── README.md                           # Documentation
 ```
 
----
 
 
 .\bin\genomix.exe
