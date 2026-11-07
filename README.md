@@ -122,9 +122,5 @@ D:\PACKAGES\SEM5\DAA\
 
 
 
-.\bin\genomix.exe
-```
-
----
 
 
