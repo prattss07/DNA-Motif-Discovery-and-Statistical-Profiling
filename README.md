@@ -59,7 +59,7 @@ $$Z[i] = \max \{ k \mid S[i \dots i+k-1] = S[0 \dots k-1] \}$$
 
 * **Active Window $[L, R]$:** Maintains the rightmost match segment. When current index $i \le R$, previous computations are reused in $O(1)$ time, skipping redundant character comparisons.
 * **Tandem Repeat Clustering:** Discovered match indices are evaluated for consecutive adjacency ($k, k+3, k+6, \dots$) to detect unbroken repeat chains.
-* **Skip Efficiency:** Consistently bypasses between **53% and 61% of direct comparisons** compared to a naive scan.
+
 
 ### 2. Statistical Background Model & Risk Prediction
 * **Markov Null Model:** Calculates expected motif counts based on nucleotide background composition ($GC$-ratio).
@@ -173,9 +173,4 @@ Open **`http://localhost:8080`** in any web browser.
 
 ---
 
-## 👨‍🔬 Author & Credentials
 
-* **Team Member:** PRATHAMESH P (24PD28)
-* **GitHub Author:** prattss07
-* **Contact:** prathampsg266@gmail.com
-* **Repository:** [https://github.com/prattss07/DNA-Motif-Discovery-and-Statistical-Profiling](https://github.com/prattss07/DNA-Motif-Discovery-and-Statistical-Profiling)
